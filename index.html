@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precise Age Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fff1eb 0%, #ace0f9 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        /* Dark mode base */
+        body.dark {
+            background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
+        }
+        
+        .calculator-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+        }
+        
+        .calculator-container:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dark container */
+        body.dark .calculator-container {
+            background: #0b1220;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        body.dark label { color: #cbd5e1; }
+        
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        body.dark input[type="date"] {
+            background: #0f172a;
+            color: #e2e8f0;
+            border-color: #1f2937;
+        }
+        
+        input[type="date"]:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: linear-gradient(to right, #5a67d8, #6b46c1);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #1f2937;
+        }
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        body.dark .btn-secondary {
+            background: #111827;
+            color: #e5e7eb;
+        }
+        body.dark .btn-secondary:hover { background: #1f2937; }
+        
+        .result-container {
+            margin-top: 30px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .result-box {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        body.dark .result-box { background: #0f172a; }
+        
+        .result-item {
+            padding: 10px;
+        }
+        
+        .result-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        body.dark .result-value { color: #93c5fd; }
+        
+        .result-label {
+            font-size: 14px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        body.dark .result-label { color: #94a3b8; }
+        
+        .error-message {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        body.dark .error-message { color: #f87171; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2d3748;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        body.dark .title { color: #e5e7eb; }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        body.dark .subtitle { color: #94a3b8; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .toggle {
+            width: auto;
+            padding: 8px 14px;
+        }
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .section-title {
+            margin-top: 24px;
+            font-weight: 600;
+            color: #374151;
+        }
+        body.dark .section-title { color: #e5e7eb; }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="top-bar">
+            <div></div>
+            <button id="theme-toggle" class="toggle btn-secondary" type="button" aria-label="Toggle dark mode">Dark Mode</button>
+        </div>
+        <h1 class="title">Precision Age Calculator</h1>
+        <p class="subtitle">✨Discover your exact age down to the second✨</p>
+        
+        <div class="input-group">
+            <label for="dob">Enter Your Date of Birth</label>
+            <input type="date" id="dob" max="">
+            <div class="error-message" id="error-message">Please enter a valid date.</div>
+        </div>
+        
+        <button id="calculate-btn">Calculate Age</button>
+        
+        <div class="result-container" id="result-container" style="display: none;">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Your Age Is</h2>
+            <div class="result-box">
+                <div class="result-item">
+                    <div class="result-value" id="years">0</div>
+                    <div class="result-label">Years</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="months">0</div>
+                    <div class="result-label">Months</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="days">0</div>
+                    <div class="result-label">Days</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Total Time Lived</h3>
+            <div class="result-box">
+                <div class="result-item">
+                    <div class="result-value" id="hoursTotal">0</div>
+                    <div class="result-label">Hours</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="minutesTotal">0</div>
+                    <div class="result-label">Minutes</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="secondsTotal">0</div>
+                    <div class="result-label">Seconds</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">Next Birthday</h3>
+            <div class="result-box">
+                <div class="result-item">
+                    <div class="result-value" id="next-birthday-date">—</div>
+                    <div class="result-label">Date</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="next-birthday-weekday">—</div>
+                    <div class="result-label">Weekday</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="days-until">—</div>
+                    <div class="result-label">Days Left</div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="copy-btn" class="btn-secondary" type="button">Copy Result</button>
+                <button id="share-btn" class="btn-secondary" type="button">Share</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Utilities ---
+        const $ = (id) => document.getElementById(id);
+        const dobInputEl = $('dob');
+        const errorMessageEl = $('error-message');
+        const resultContainerEl = $('result-container');
+        const themeToggleBtn = $('theme-toggle');
+
+        // Set max date to today
+        dobInputEl.max = new Date().toISOString().split('T')[0];
+
+        // Theme persistence
+        (function initTheme() {
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const useDark = stored ? stored === 'dark' : prefersDark;
+            document.body.classList.toggle('dark', useDark);
+            themeToggleBtn.textContent = useDark ? 'Light Mode' : 'Dark Mode';
+        })();
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark');
+            themeToggleBtn.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        let tickerId = null;
+
+        function validateDob(dob) {
+            const today = new Date();
+            if (!dob) {
+                errorMessageEl.textContent = 'Please enter your date of birth.';
+                return false;
+            }
+            if (dob > today) {
+                errorMessageEl.textContent = 'Date cannot be in the future.';
+                return false;
+            }
+            const oldest = new Date();
+            oldest.setFullYear(oldest.getFullYear() - 130);
+            if (dob < oldest) {
+                errorMessageEl.textContent = 'Please enter a realistic date (less than 130 years ago).';
+                return false;
+            }
+            return true;
+        }
+
+        function formatDateHuman(d) {
+            return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function weekdayName(d) {
+            return d.toLocaleDateString(undefined, { weekday: 'long' });
+        }
+
+        function computeNextBirthday(dob, now) {
+            const month = dob.getMonth();
+            const day = dob.getDate();
+            let year = now.getFullYear();
+
+            // Handle Feb 29 on non-leap years -> Feb 28
+            const isLeapDob = month === 1 && day === 29;
+            let candidate = new Date(year, month, isLeapDob ? 28 : day);
+            if (isLeapDob && (new Date(year, 1, 29).getDate() === 29)) {
+                candidate = new Date(year, 1, 29);
+            }
+            if (candidate < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+                year += 1;
+                candidate = new Date(year, month, isLeapDob ? 28 : day);
+                if (isLeapDob && (new Date(year, 1, 29).getDate() === 29)) {
+                    candidate = new Date(year, 1, 29);
+                }
+            }
+            const msPerDay = 24 * 60 * 60 * 1000;
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfCandidate = new Date(candidate.getFullYear(), candidate.getMonth(), candidate.getDate());
+            const daysLeft = Math.round((startOfCandidate - startOfToday) / msPerDay);
+            return { date: candidate, daysLeft };
+        }
+
+        function calculateAgeParts(dob, now) {
+            let years = now.getFullYear() - dob.getFullYear();
+            let months = now.getMonth() - dob.getMonth();
+            let days = now.getDate() - dob.getDate();
+
+            if (days < 0) {
+                months -= 1;
+                const lastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += lastMonth.getDate();
+            }
+            if (months < 0) {
+                years -= 1;
+                months += 12;
+            }
+            return { years, months, days };
+        }
+
+        function calculateTotals(dob, now) {
+            const ms = now - dob;
+            const totalSeconds = Math.floor(ms / 1000);
+            const totalMinutes = Math.floor(ms / (1000 * 60));
+            const totalHours = Math.floor(ms / (1000 * 60 * 60));
+            const totalDays = Math.floor(ms / (1000 * 60 * 60 * 24));
+            return { totalSeconds, totalMinutes, totalHours, totalDays };
+        }
+
+        function render(dob) {
+            const now = new Date();
+            const age = calculateAgeParts(dob, now);
+            const totals = calculateTotals(new Date(dob.getFullYear(), dob.getMonth(), dob.getDate()), now);
+            const nextB = computeNextBirthday(dob, now);
+
+            $('years').textContent = age.years;
+            $('months').textContent = age.months;
+            $('days').textContent = age.days;
+
+            $('hoursTotal').textContent = totals.totalHours.toLocaleString();
+            $('minutesTotal').textContent = totals.totalMinutes.toLocaleString();
+            $('secondsTotal').textContent = totals.totalSeconds.toLocaleString();
+
+            $('next-birthday-date').textContent = formatDateHuman(nextB.date);
+            $('next-birthday-weekday').textContent = weekdayName(nextB.date);
+            $('days-until').textContent = nextB.daysLeft.toString();
+
+            const turning = age.years + (nextB.daysLeft === 0 ? 0 : 1);
+            $('next-birthday-date').setAttribute('title', `Turning ${turning}`);
+        }
+
+        function startTicker(dob) {
+            if (tickerId) clearInterval(tickerId);
+            tickerId = setInterval(() => render(dob), 1000);
+        }
+
+        function calculateAndShow() {
+            const raw = dobInputEl.value;
+            const dob = raw ? new Date(raw) : null;
+            if (!validateDob(dob)) {
+                errorMessageEl.style.display = 'block';
+                resultContainerEl.style.display = 'none';
+                if (tickerId) { clearInterval(tickerId); tickerId = null; }
+                return;
+            }
+            errorMessageEl.style.display = 'none';
+            resultContainerEl.style.display = 'block';
+            render(dob);
+            startTicker(dob);
+        }
+
+        $('calculate-btn').addEventListener('click', calculateAndShow);
+        dobInputEl.addEventListener('input', calculateAndShow);
+
+        // Copy and Share
+        $('copy-btn').addEventListener('click', async () => {
+            const years = $('years').textContent;
+            const months = $('months').textContent;
+            const days = $('days').textContent;
+            const hours = $('hoursTotal').textContent;
+            const minutes = $('minutesTotal').textContent;
+            const seconds = $('secondsTotal').textContent;
+            const nextDate = $('next-birthday-date').textContent;
+            const weekday = $('next-birthday-weekday').textContent;
+            const daysLeft = $('days-until').textContent;
+            const text = `My age is ${years} years, ${months} months, and ${days} days.\n` +
+                         `Total lived: ${hours} hours, ${minutes} minutes, ${seconds} seconds.\n` +
+                         `Next birthday: ${nextDate} (${weekday}), ${daysLeft} days left.`;
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('Copied to clipboard!');
+            } catch (_) {
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                alert('Copied to clipboard!');
+            }
+        });
+
+        $('share-btn').addEventListener('click', async () => {
+            const years = $('years').textContent;
+            const months = $('months').textContent;
+            const days = $('days').textContent;
+            const nextDate = $('next-birthday-date').textContent;
+            const daysLeft = $('days-until').textContent;
+            const title = 'My Age Result';
+            const text = `I am ${years} years, ${months} months, and ${days} days old. Next birthday: ${nextDate} (${daysLeft} days left).`;
+            try {
+                if (navigator.share) {
+                    await navigator.share({ title, text });
+                } else {
+                    await navigator.clipboard.writeText(text);
+                    alert('Share not supported. Copied to clipboard instead.');
+                }
+            } catch (_) {
+                // user cancelled or not supported
+            }
+        });
+    </script>
+</body>
+</html>
+
