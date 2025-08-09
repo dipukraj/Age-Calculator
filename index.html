@@ -16,6 +16,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            transition: background 0.35s ease;
         }
         
         /* Dark mode base */
@@ -110,7 +111,13 @@
         .result-container {
             margin-top: 30px;
             text-align: center;
-            animation: fadeIn 0.5s ease-out;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .result-container.is-visible {
+            opacity: 1;
+            transform: translateY(0);
         }
         
         .result-box {
@@ -133,6 +140,10 @@
             font-weight: 600;
             color: #667eea;
             margin-bottom: 5px;
+            font-variant-numeric: tabular-nums; /* fixed-width digits */
+            font-feature-settings: 'tnum' 1, 'lnum' 1;
+            white-space: nowrap; /* prevent wrap */
+            display: inline-block; /* allow min-width */
         }
         body.dark .result-value { color: #93c5fd; }
         
@@ -196,6 +207,31 @@
             color: #374151;
         }
         body.dark .section-title { color: #e5e7eb; }
+
+        /* Prevent layout shift by reserving space for numbers */
+        #years, #months, #days { min-width: 3.5ch; }
+        #hoursTotal { min-width: 9ch; }
+        #minutesTotal { min-width: 10ch; }
+        #secondsTotal { min-width: 12ch; }
+
+        /* Responsive layout */
+        @media (max-width: 640px) {
+            .result-box { grid-template-columns: 1fr; }
+            .actions { grid-template-columns: 1fr; }
+            .title { font-size: 24px; }
+            .subtitle { font-size: 14px; }
+        }
+        @media (min-width: 641px) and (max-width: 900px) {
+            .result-box { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+
+        /* Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -215,7 +251,7 @@
         
         <button id="calculate-btn">Calculate Age</button>
         
-        <div class="result-container" id="result-container" style="display: none;">
+        <div class="result-container hidden" id="result-container">
             <h2 class="text-xl font-semibold text-gray-700 mb-2">Your Age Is</h2>
             <div class="result-box">
                 <div class="result-item">
@@ -282,13 +318,12 @@
         // Set max date to today
         dobInputEl.max = new Date().toISOString().split('T')[0];
 
-        // Theme persistence
+        // Always start in light mode on load (ignore previous stored/system preference)
         (function initTheme() {
-            const stored = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const useDark = stored ? stored === 'dark' : prefersDark;
-            document.body.classList.toggle('dark', useDark);
-            themeToggleBtn.textContent = useDark ? 'Light Mode' : 'Dark Mode';
+            document.body.classList.remove('dark');
+            themeToggleBtn.textContent = 'Dark Mode';
+            // Ensure localStorage reflects current initial state
+            try { localStorage.setItem('theme', 'light'); } catch (_) {}
         })();
 
         themeToggleBtn.addEventListener('click', () => {
@@ -298,6 +333,51 @@
         });
 
         let tickerId = null;
+        let inputDebounceId = null;
+
+        function showResults() {
+            if (!resultContainerEl.classList.contains('hidden')) return;
+            resultContainerEl.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                resultContainerEl.classList.add('is-visible');
+            });
+        }
+
+        function hideResults() {
+            if (resultContainerEl.classList.contains('hidden')) return;
+            resultContainerEl.classList.remove('is-visible');
+            const onEnd = () => {
+                resultContainerEl.classList.add('hidden');
+                resultContainerEl.removeEventListener('transitionend', onEnd);
+            };
+            resultContainerEl.addEventListener('transitionend', onEnd);
+        }
+
+        function animateNumber(el, toValue, duration = 400) {
+            const startValue = Number(el.dataset.value || el.textContent.replace(/[,\s]/g, '') || 0);
+            const endValue = Number(toValue);
+            if (!isFinite(startValue) || !isFinite(endValue)) {
+                el.textContent = String(toValue);
+                el.dataset.value = String(endValue);
+                return;
+            }
+            if (startValue === endValue) return;
+            const startTime = performance.now();
+            function step(now) {
+                const t = Math.min(1, (now - startTime) / duration);
+                // easeOutCubic
+                const eased = 1 - Math.pow(1 - t, 3);
+                const current = Math.round(startValue + (endValue - startValue) * eased);
+                el.textContent = current.toLocaleString();
+                el.dataset.value = String(current);
+                if (t < 1) requestAnimationFrame(step);
+                else {
+                    el.textContent = endValue.toLocaleString();
+                    el.dataset.value = String(endValue);
+                }
+            }
+            requestAnimationFrame(step);
+        }
 
         function validateDob(dob) {
             const today = new Date();
@@ -383,13 +463,13 @@
             const totals = calculateTotals(new Date(dob.getFullYear(), dob.getMonth(), dob.getDate()), now);
             const nextB = computeNextBirthday(dob, now);
 
-            $('years').textContent = age.years;
-            $('months').textContent = age.months;
-            $('days').textContent = age.days;
+            animateNumber($('years'), age.years, 350);
+            animateNumber($('months'), age.months, 350);
+            animateNumber($('days'), age.days, 350);
 
-            $('hoursTotal').textContent = totals.totalHours.toLocaleString();
-            $('minutesTotal').textContent = totals.totalMinutes.toLocaleString();
-            $('secondsTotal').textContent = totals.totalSeconds.toLocaleString();
+            animateNumber($('hoursTotal'), totals.totalHours, 350);
+            animateNumber($('minutesTotal'), totals.totalMinutes, 350);
+            animateNumber($('secondsTotal'), totals.totalSeconds, 350);
 
             $('next-birthday-date').textContent = formatDateHuman(nextB.date);
             $('next-birthday-weekday').textContent = weekdayName(nextB.date);
@@ -409,18 +489,21 @@
             const dob = raw ? new Date(raw) : null;
             if (!validateDob(dob)) {
                 errorMessageEl.style.display = 'block';
-                resultContainerEl.style.display = 'none';
+                hideResults();
                 if (tickerId) { clearInterval(tickerId); tickerId = null; }
                 return;
             }
             errorMessageEl.style.display = 'none';
-            resultContainerEl.style.display = 'block';
+            showResults();
             render(dob);
             startTicker(dob);
         }
 
         $('calculate-btn').addEventListener('click', calculateAndShow);
-        dobInputEl.addEventListener('input', calculateAndShow);
+        dobInputEl.addEventListener('input', () => {
+            clearTimeout(inputDebounceId);
+            inputDebounceId = setTimeout(calculateAndShow, 150);
+        });
 
         // Copy and Share
         $('copy-btn').addEventListener('click', async () => {
