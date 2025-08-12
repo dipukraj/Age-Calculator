@@ -6,16 +6,17 @@
     <title>Precise Age Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body>
+<body style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch;">
     <!-- Animated Background -->
     <div class="animated-bg" id="animated-bg"></div>
 
     <div class="calculator-container">
         <div class="top-bar">
             <div class="creator-info">
-                <span class="creator-text">Made with ❤️ by</span>
-                <a href="https://www.instagram.com/r.p.dipu" class="creator-link" id="creator-link">Dipu K Raj</a>
+                <span class="creator-text">✨5ukoon...</span>
+                <a href="https://www.instagram.com/r.p.dipu" class="creator-link" id="creator-link">❤️</a>
             </div>
             <button id="theme-toggle" class="toggle btn-secondary" type="button" aria-label="Toggle dark mode">Dark Mode</button>
         </div>
@@ -124,6 +125,7 @@
             </div>
 
             <h3 class="section-title">Next Birthday</h3>
+            <div class="next-birthday-section">
             <div class="result-box">
                 <div class="result-item">
                     <div class="result-value" id="next-birthday-date">—</div>
@@ -136,6 +138,193 @@
                 <div class="result-item">
                     <div class="result-value" id="days-until">—</div>
                     <div class="result-label">Days Left</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Height & Weight Calculator Section -->
+            <div class="height-weight-section">
+                <h3 class="section-title">📏 Height & Weight Calculator</h3>
+                <div class="hw-input-container">
+                    <div class="hw-input-group">
+                        <label for="gender-select">Gender</label>
+                        <select id="gender-select" class="hw-select">
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    <div class="hw-input-group">
+                        <label for="height-input">Height</label>
+                        <div class="height-input-wrapper">
+                            <input type="number" id="height-input" class="hw-input" placeholder="Enter height" min="50" max="250">
+                            <select id="height-unit" class="hw-unit-select">
+                                <option value="cm">cm</option>
+                                <option value="ft">ft</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="hw-input-group">
+                        <label for="weight-input">Weight</label>
+                        <div class="weight-input-wrapper">
+                            <input type="number" id="weight-input" class="hw-input" placeholder="Enter weight" min="20" max="200">
+                            <select id="weight-unit" class="hw-unit-select">
+                                <option value="kg">kg</option>
+                                <option value="lbs">lbs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="calculate-hw-btn" class="hw-calculate-btn">Calculate Health Status</button>
+                </div>
+                
+                <div class="hw-results hidden" id="hw-results">
+                    <h4 class="hw-results-title">Your Health Analysis</h4>
+                    <div class="hw-results-grid">
+                        <div class="hw-result-item">
+                            <div class="hw-result-value" id="bmi-value">—</div>
+                            <div class="hw-result-label">BMI</div>
+                            <div class="hw-result-status" id="bmi-status">—</div>
+                        </div>
+                        <div class="hw-result-item">
+                            <div class="hw-result-value" id="height-percentile">—</div>
+                            <div class="hw-result-label">Height Percentile</div>
+                            <div class="hw-result-status" id="height-status">—</div>
+                        </div>
+                        <div class="hw-result-item">
+                            <div class="hw-result-value" id="weight-percentile">—</div>
+                            <div class="hw-result-label">Weight Percentile</div>
+                            <div class="hw-result-status" id="weight-status">—</div>
+                        </div>
+                    </div>
+                    <div class="hw-recommendations" id="hw-recommendations">
+                        <!-- Recommendations will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Enhancements Section -->
+            <div class="visual-enhancements-section">
+                <h3 class="section-title">🎨 Visual Age Representation</h3>
+                
+                <!-- Age in Different Units -->
+                <div class="age-units-section">
+                    <h4 class="subsection-title">Your Age in Different Units</h4>
+                    <div class="age-units-grid">
+                        <div class="age-unit-item">
+                            <span class="unit-value" id="age-minutes">0</span>
+                            <span class="unit-label">Minutes</span>
+                        </div>
+                        <div class="age-unit-item">
+                            <span class="unit-value" id="age-seconds">0</span>
+                            <span class="unit-label">Seconds</span>
+                        </div>
+                        <div class="age-unit-item">
+                            <span class="unit-value" id="age-heartbeats">0</span>
+                            <span class="unit-label">Heartbeats</span>
+                        </div>
+                        <div class="age-unit-item">
+                            <span class="unit-value" id="age-blinks">0</span>
+                            <span class="unit-label">Blinks</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seasonal Theme -->
+                <div class="seasonal-theme-section">
+                    <h4 class="subsection-title">🌱 Seasonal Theme</h4>
+                    <div class="seasonal-info">
+                        <div class="season-icon" id="season-icon">🌸</div>
+                        <div class="season-name" id="season-name">Spring</div>
+                        <div class="season-dates" id="season-dates">Mar 20 - Jun 20</div>
+                    </div>
+                </div>
+
+                <!-- Custom Theme Selector -->
+                <div class="theme-selector-section">
+                    <h4 class="subsection-title">🎨 Choose Your Theme</h4>
+                    <div class="theme-options">
+                        <button class="theme-option" data-theme="default">Default</button>
+                        <button class="theme-option" data-theme="ocean">Ocean</button>
+                        <button class="theme-option" data-theme="sunset">Sunset</button>
+                        <button class="theme-option" data-theme="forest">Forest</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Features Section -->
+            <div class="social-features-section">
+                <h3 class="section-title">🚀 Social Features</h3>
+                
+                <!-- Age Challenges -->
+                <div class="age-challenges-section">
+                    <h4 class="subsection-title">🎯 Age Challenges</h4>
+                    <div class="challenges-grid">
+                        <div class="challenge-item">
+                            <span class="challenge-icon">⏰</span>
+                            <span class="challenge-text">Share your age in seconds</span>
+                            <button class="challenge-btn" id="share-seconds-btn">Share</button>
+                        </div>
+                        <div class="challenge-item">
+                            <span class="challenge-icon">🎂</span>
+                            <span class="challenge-text">Birthday countdown challenge</span>
+                            <button class="challenge-btn" id="share-countdown-btn">Share</button>
+                        </div>
+                        <div class="challenge-item">
+                            <span class="challenge-icon">🏆</span>
+                            <span class="challenge-text">Age milestone celebration</span>
+                            <button class="challenge-btn" id="share-milestone-btn">Share</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Media Ready Content -->
+                <div class="social-content-section">
+                    <h4 class="subsection-title">📱 Social Media Ready</h4>
+                    <div class="social-content-grid">
+                        <div class="content-item">
+                            <h5>Instagram Story</h5>
+                            <div class="content-preview" id="instagram-preview">
+                                <div class="preview-text">"I'm exactly X years, Y months, Z days old! 🎉"</div>
+                            </div>
+                            <button class="content-btn" id="copy-instagram-btn">Copy Text</button>
+                        </div>
+                        <div class="content-item">
+                            <h5>Twitter Post</h5>
+                            <div class="content-preview" id="twitter-preview">
+                                <div class="preview-text">"Age: X years | Next birthday in Y days | Life progress: Z% 🚀"</div>
+                            </div>
+                            <button class="content-btn" id="copy-twitter-btn">Copy Text</button>
+                        </div>
+                        <div class="content-item">
+                            <h5>WhatsApp Status</h5>
+                            <div class="content-preview" id="whatsapp-preview">
+                                <div class="preview-text">"🎂 My age journey: X years, Y months, Z days! #AgeCalculator"</div>
+                            </div>
+                            <button class="content-btn" id="copy-whatsapp-btn">Copy Text</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievement Sharing -->
+                <div class="achievement-sharing-section">
+                    <h4 class="subsection-title">🏅 Share Your Achievements</h4>
+                    <div class="achievement-share-grid">
+                        <div class="achievement-share-item">
+                            <span class="achievement-icon">⭐</span>
+                            <span class="achievement-text">First Time User</span>
+                            <button class="share-achievement-btn" id="share-first-user-btn">Share</button>
+                        </div>
+                        <div class="achievement-share-item">
+                            <span class="achievement-icon">🎯</span>
+                            <span class="achievement-text">Milestone Reached</span>
+                            <button class="share-achievement-btn" id="share-milestone-achievement-btn">Share</button>
+                        </div>
+                        <div class="achievement-share-item">
+                            <span class="achievement-icon">🌟</span>
+                            <span class="achievement-text">Zodiac Discovery</span>
+                            <button class="share-achievement-btn" id="share-zodiac-btn">Share</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -150,11 +339,29 @@
     <div class="footer">
         <div class="footer-content">
             <p>© 2025 Precision Age Calculator</p>
-            <p>Designed & Developed by <a href="https://www.instagram.com/r.p.dipu" class="footer-link" id="footer-creator-link">Dipu K Raj</a></p>
+            <p>Designed & Developed with ❤️ by <a href="https://www.instagram.com/r.p.dipu" class="footer-link" id="footer-creator-link">Dipu K Raj</a></p>
             <div class="social-links">
-                <a href="https://github.com/dipukraj" class="social-link" title="GitHub">📱</a>
-                <a href="https://www.linkedin.com/in/dipukraj/" class="social-link" title="LinkedIn">💼</a>
-                <a href="https://dipukraj.me/" class="social-link" title="Portfolio">🌐</a>
+                <a href="https://www.facebook.com/dipu.kraj.92" class="social-link" title="Facebook">
+                    <i class="fa-brands fa-facebook-f social-icon"></i>
+                </a>
+                <a href="https://www.instagram.com/r.p.dipu" class="social-link" title="Instagram">
+                    <i class="fa-brands fa-instagram social-icon"></i>
+                </a>
+                <a href="https://youtube.com/@explorewithdipu" class="social-link" title="YouTube">
+                    <i class="fa-brands fa-youtube social-icon"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/dipukraj/" class="social-link" title="LinkedIn">
+                    <i class="fa-brands fa-linkedin-in social-icon"></i>
+                </a>
+                <a href="https://wa.me/7295808100" class="social-link" title="WhatsApp">
+                    <i class="fa-brands fa-whatsapp social-icon"></i>
+                </a>
+                <a href="https://dipukraj.me/" class="social-link" title="Website">
+                    <i class="fa-solid fa-globe social-icon"></i>
+                </a>
+                <a href="https://github.com/dipukraj" class="social-link" title="GitHub">
+                    <i class="fa-brands fa-github social-icon"></i>
+                </a>
             </div>
         </div>
     </div>

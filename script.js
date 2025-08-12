@@ -32,24 +32,26 @@ syncDobPlaceholder();
     try { localStorage.setItem('theme', 'light'); } catch (_) {}
 })();
 
-// Initialize animated background
-createAnimatedBackground();
-
-// Update creator information
-function updateCreatorInfo() {
-    $('creator-link').textContent = CREATOR_INFO.name;
-    $('creator-link').href = CREATOR_INFO.website;
-    $('footer-creator-link').textContent = CREATOR_INFO.name;
-    $('footer-creator-link').href = CREATOR_INFO.website;
-    
-    // Update social links
-    const socialLinks = document.querySelectorAll('.social-link');
-    socialLinks[0].href = CREATOR_INFO.github; // GitHub
-    socialLinks[1].href = CREATOR_INFO.linkedin; // LinkedIn
-    socialLinks[2].href = CREATOR_INFO.portfolio; // Portfolio
+// Initialize animated background (only on desktop for better mobile performance)
+if (window.innerWidth > 768) {
+    createAnimatedBackground();
 }
 
-updateCreatorInfo();
+// Update creator information
+// function updateCreatorInfo() {
+//     $('creator-link').textContent = CREATOR_INFO.name;
+//     $('creator-link').href = CREATOR_INFO.website;
+//     $('footer-creator-link').textContent = CREATOR_INFO.name;
+//     $('footer-creator-link').href = CREATOR_INFO.website;
+//     
+//     // Update social links
+//     const socialLinks = document.querySelectorAll('.social-link');
+//     socialLinks[0].href = CREATOR_INFO.github; // GitHub
+//     socialLinks[1].href = CREATOR_INFO.linkedin; // LinkedIn
+//     socialLinks[2].href = CREATOR_INFO.portfolio; // Portfolio
+// }
+
+// updateCreatorInfo();
 
 themeToggleBtn.addEventListener('click', () => {
     const isDark = document.body.classList.toggle('dark');
@@ -182,12 +184,16 @@ function calculateTotals(dob, now) {
     return { totalSeconds, totalMinutes, totalHours, totalDays };
 }
 
-// Confetti Animation
+// Confetti Animation (optimized for mobile)
 function createConfetti() {
     const container = $('confetti-container');
     container.innerHTML = '';
     
-    for (let i = 0; i < 50; i++) {
+    // Reduce confetti count on mobile for better performance
+    const isMobile = window.innerWidth <= 768;
+    const confettiCount = isMobile ? 20 : 50;
+    
+    for (let i = 0; i < confettiCount; i++) {
         const confetti = document.createElement('div');
         confetti.className = 'confetti';
         confetti.style.left = Math.random() * 100 + '%';
@@ -196,17 +202,23 @@ function createConfetti() {
         container.appendChild(confetti);
     }
     
+    // Shorter duration on mobile
+    const duration = isMobile ? 3000 : 5000;
     setTimeout(() => {
         container.innerHTML = '';
-    }, 5000);
+    }, duration);
 }
 
-// Animated Background
+// Animated Background (optimized for mobile)
 function createAnimatedBackground() {
     const bg = $('animated-bg');
     bg.innerHTML = '';
     
-    for (let i = 0; i < 20; i++) {
+    // Reduce particle count on mobile for better performance
+    const isMobile = window.innerWidth <= 768;
+    const particleCount = isMobile ? 10 : 20;
+    
+    for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.className = 'floating-particle';
         particle.style.left = Math.random() * 100 + '%';
@@ -410,11 +422,19 @@ function render(dob) {
             <div class="timeline-date">${item.date.toLocaleDateString()}</div>
         </div>
     `).join('');
+    
+    // Update new Visual Enhancements and Social Features
+    enhanceAgeCalculation(dob, now);
 }
 
 function startTicker(dob) {
     if (tickerId) clearInterval(tickerId);
-    tickerId = setInterval(() => render(dob), 1000);
+    
+    // Optimize ticker for mobile - slower update on mobile for better performance
+    const isMobile = window.innerWidth <= 768;
+    const interval = isMobile ? 2000 : 1000; // 2 seconds on mobile, 1 second on desktop
+    
+    tickerId = setInterval(() => render(dob), interval);
 }
 
 function calculateAndShow() {
@@ -510,3 +530,508 @@ $('share-btn').addEventListener('click', async () => {
         // user cancelled or not supported
     }
 });
+
+    // ===== NEW VISUAL ENHANCEMENTS FUNCTIONALITY =====
+
+    // Age in different units calculation
+    function updateAgeUnits(ageInDays) {
+        const minutes = ageInDays * 24 * 60;
+        const seconds = minutes * 60;
+        const heartbeats = seconds * 80; // Average 80 beats per minute
+        const blinks = seconds * 0.033; // Average blink every 30 seconds
+
+        $('age-minutes').textContent = formatLargeNumber(minutes);
+        $('secondsTotal').textContent = formatLargeNumber(seconds);
+        $('age-heartbeats').textContent = formatLargeNumber(Math.floor(heartbeats));
+        $('age-blinks').textContent = formatLargeNumber(Math.floor(blinks));
+    }
+
+    // Format large numbers with commas
+    function formatLargeNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Seasonal theme detection
+    function updateSeasonalTheme() {
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        
+        let season, icon, dates;
+        
+        if ((month === 3 && day >= 20) || month === 4 || month === 5 || (month === 6 && day <= 20)) {
+            season = "Spring";
+            icon = "🌸";
+            dates = "Mar 20 - Jun 20";
+        } else if ((month === 6 && day >= 21) || month === 7 || month === 8 || (month === 9 && day <= 22)) {
+            season = "Summer";
+            icon = "☀️";
+            dates = "Jun 21 - Sep 22";
+        } else if ((month === 9 && day >= 23) || month === 10 || month === 11 || (month === 12 && day <= 20)) {
+            season = "Autumn";
+            icon = "🍂";
+            dates = "Sep 23 - Dec 20";
+        } else {
+            season = "Winter";
+            icon = "❄️";
+            dates = "Dec 21 - Mar 19";
+        }
+        
+        $('season-icon').textContent = icon;
+        $('season-name').textContent = season;
+        $('season-dates').textContent = dates;
+    }
+
+    // Custom theme selector
+    function initializeThemeSelector() {
+        const themeOptions = document.querySelectorAll('.theme-option');
+        
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove active class from all options
+                themeOptions.forEach(opt => opt.classList.remove('active'));
+                // Add active class to clicked option
+                option.classList.add('active');
+                
+                const theme = option.dataset.theme;
+                applyCustomTheme(theme);
+            });
+        });
+        
+        // Set default theme as active
+        document.querySelector('[data-theme="default"]').classList.add('active');
+    }
+
+    // Apply custom themes
+    function applyCustomTheme(theme) {
+        const container = document.querySelector('.calculator-container');
+        
+        // Remove existing theme classes
+        container.classList.remove('theme-ocean', 'theme-sunset', 'theme-forest');
+        
+        if (theme !== 'default') {
+            container.classList.add(`theme-${theme}`);
+        }
+        
+        // Store theme preference
+        localStorage.setItem('preferred-theme', theme);
+    }
+
+    // ===== NEW SOCIAL FEATURES FUNCTIONALITY =====
+
+    // Initialize social features
+    function initializeSocialFeatures() {
+        // Age challenges
+        initializeAgeChallenges();
+        
+        // Social content previews
+        initializeSocialContent();
+        
+        // Achievement sharing
+        initializeAchievementSharing();
+    }
+
+    // Age challenges functionality
+    function initializeAgeChallenges() {
+        // Share age in seconds
+        $('share-seconds-btn').addEventListener('click', () => {
+            const ageInSeconds = parseInt($('secondsTotal').textContent.replace(/,/g, ''));
+            const text = `I'm exactly ${formatLargeNumber(ageInSeconds)} seconds old! ⏰ #AgeCalculator`;
+            shareText(text);
+        });
+        
+        // Share birthday countdown
+        $('share-countdown-btn').addEventListener('click', () => {
+            const daysLeft = $('days-until').textContent;
+            const text = `My next birthday is in ${daysLeft} days! 🎂 #BirthdayCountdown`;
+            shareText(text);
+        });
+        
+        // Share milestone
+        $('share-milestone-btn').addEventListener('click', () => {
+            const years = $('years').textContent;
+            const text = `Just reached ${years} years milestone! 🏆 #AgeMilestone`;
+            shareText(text);
+        });
+    }
+
+    // Social content functionality
+    function initializeSocialContent() {
+        // Instagram preview
+        $('copy-instagram-btn').addEventListener('click', () => {
+            const years = $('years').textContent;
+            const months = $('months').textContent;
+            const days = $('days').textContent;
+            const text = `I'm exactly ${years} years, ${months} months, ${days} days old! 🎉`;
+            copyToClipboard(text);
+            showCopySuccess('Instagram text copied!');
+        });
+        
+        // Twitter preview
+        $('copy-twitter-btn').addEventListener('click', () => {
+            const years = $('years').textContent;
+            const daysLeft = $('days-until').textContent;
+            const progress = document.querySelector('#life-progress').style.width;
+            const text = `Age: ${years} years | Next birthday in ${daysLeft} days | Life progress: ${progress} 🚀`;
+            copyToClipboard(text);
+            showCopySuccess('Twitter text copied!');
+        });
+        
+        // WhatsApp preview
+        $('copy-whatsapp-btn').addEventListener('click', () => {
+            const years = $('years').textContent;
+            const months = $('months').textContent;
+            const days = $('days').textContent;
+            const text = `🎂 My age journey: ${years} years, ${months} months, ${days} days! #AgeCalculator`;
+            copyToClipboard(text);
+            showCopySuccess('WhatsApp text copied!');
+        });
+    }
+
+    // Achievement sharing functionality
+    function initializeAchievementSharing() {
+        // First time user achievement
+        $('share-first-user-btn').addEventListener('click', () => {
+            const text = `Just discovered this amazing Age Calculator! ✨ #FirstTimeUser #AgeCalculator`;
+            shareText(text);
+        });
+        
+        // Milestone achievement
+        $('share-milestone-achievement-btn').addEventListener('click', () => {
+            const years = $('years').textContent;
+            const text = `Reached ${years} years milestone! 🎯 #MilestoneAchievement #AgeCalculator`;
+            shareText(text);
+        });
+        
+        // Zodiac discovery
+        $('share-zodiac-btn').addEventListener('click', () => {
+            const zodiacName = $('zodiac-name').textContent;
+            const text = `Just discovered I'm a ${zodiacName}! 🌟 #ZodiacDiscovery #AgeCalculator`;
+            shareText(text);
+        });
+    }
+
+    // Utility functions for social features
+    function shareText(text) {
+        if (navigator.share) {
+            navigator.share({
+                title: 'My Age Calculation',
+                text: text,
+                url: 'https://dipukraj.me/age-calculator' // Use your actual website URL
+            });
+        } else {
+            // Fallback: copy to clipboard
+            copyToClipboard(text);
+            showCopySuccess('Text copied! Share it manually.');
+        }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('Text copied to clipboard');
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        });
+    }
+
+    function showCopySuccess(message) {
+        // Create a temporary success message
+        const successMsg = document.createElement('div');
+        successMsg.textContent = message;
+        successMsg.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        document.body.appendChild(successMsg);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            successMsg.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(successMsg);
+            }, 300);
+        }, 3000);
+    }
+
+    // ===== INITIALIZATION =====
+
+    // Initialize new features when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        // Existing initialization code...
+        
+        // Initialize new features
+        initializeThemeSelector();
+        initializeSocialFeatures();
+        updateSeasonalTheme();
+        
+        // Load saved theme preference
+        const savedTheme = localStorage.getItem('preferred-theme');
+        if (savedTheme && savedTheme !== 'default') {
+            applyCustomTheme(savedTheme);
+            document.querySelector(`[data-theme="${savedTheme}"]`).classList.add('active');
+        }
+
+        // Initialize Height & Weight Calculator
+        initializeHeightWeightCalculator();
+    });
+
+    // Age calculation enhancement functions
+    function enhanceAgeCalculation(dob, now) {
+        const ageInDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
+        updateAgeUnits(ageInDays);
+        updateSocialContent();
+    }
+
+    // Update social content previews
+    function updateSocialContent() {
+        const years = $('years').textContent;
+        const months = $('months').textContent;
+        const days = $('days').textContent;
+        const daysLeft = $('days-until').textContent;
+        const progress = document.querySelector('#life-progress').style.width;
+        
+        // Update Instagram preview
+        const instagramText = `I'm exactly ${years} years, ${months} months, ${days} days old! 🎉`;
+        document.querySelector('#instagram-preview .preview-text').textContent = instagramText;
+        
+        // Update Twitter preview
+        const twitterText = `Age: ${years} years | Next birthday in ${daysLeft} days | Life progress: ${progress} 🚀`;
+        document.querySelector('#twitter-preview .preview-text').textContent = twitterText;
+        
+        // Update WhatsApp preview
+        const whatsappText = `🎂 My age journey: ${years} years, ${months} months, ${days} days! #AgeCalculator`;
+        document.querySelector('#whatsapp-preview .preview-text').textContent = whatsappText;
+    }
+
+// Height & Weight Calculator Functions
+function initializeHeightWeightCalculator() {
+    const calculateBtn = document.getElementById('calculate-hw-btn');
+    if (calculateBtn) {
+        calculateBtn.addEventListener('click', calculateHealthStatus);
+    }
+}
+
+function calculateHealthStatus() {
+    const gender = document.getElementById('gender-select').value;
+    const height = parseFloat(document.getElementById('height-input').value);
+    const weight = parseFloat(document.getElementById('weight-input').value);
+    const heightUnit = document.getElementById('height-unit').value;
+    const weightUnit = document.getElementById('weight-unit').value;
+
+    if (!gender || !height || !weight) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    // Convert units to standard (cm and kg)
+    const heightCm = heightUnit === 'ft' ? height * 30.48 : height;
+    const weightKg = weightUnit === 'lbs' ? weight * 0.453592 : weight;
+
+    // Calculate BMI
+    const heightM = heightCm / 100;
+    const bmi = weightKg / (heightM * heightM);
+
+    // Calculate percentiles based on age and gender
+    const age = calculateAgeFromDOB();
+    const heightPercentile = calculateHeightPercentile(heightCm, age, gender);
+    const weightPercentile = calculateWeightPercentile(weightKg, heightCm, age, gender);
+
+    // Display results
+    displayHealthResults(bmi, heightPercentile, weightPercentile, heightCm, weightKg);
+}
+
+function calculateAgeFromDOB() {
+    const dobInput = document.getElementById('dob');
+    if (!dobInput.value) return 25; // Default age if DOB not set
+    
+    const dob = new Date(dobInput.value);
+    const today = new Date();
+    const age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        return age - 1;
+    }
+    return age;
+}
+
+function calculateHeightPercentile(heightCm, age, gender) {
+    // Simplified height percentile calculation based on WHO standards
+    let expectedHeight;
+    
+    if (gender === 'male') {
+        if (age <= 18) {
+            expectedHeight = 170 + (age - 18) * 0.5; // Adult male average
+        } else {
+            expectedHeight = 175; // Adult male average
+        }
+    } else {
+        if (age <= 18) {
+            expectedHeight = 160 + (age - 18) * 0.5; // Adult female average
+        } else {
+            expectedHeight = 162; // Adult female average
+        }
+    }
+    
+    const difference = heightCm - expectedHeight;
+    const standardDeviation = 7; // Approximate standard deviation
+    const zScore = difference / standardDeviation;
+    
+    // Convert Z-score to percentile
+    return Math.round((0.5 + 0.5 * Math.erf(zScore / Math.sqrt(2))) * 100);
+}
+
+function calculateWeightPercentile(weightKg, heightCm, age, gender) {
+    // Calculate ideal weight using various formulas
+    const heightM = heightCm / 100;
+    
+    // Devine formula for ideal weight
+    let idealWeight;
+    if (gender === 'male') {
+        idealWeight = 50 + 2.3 * ((heightCm - 152.4) / 2.54);
+    } else {
+        idealWeight = 45.5 + 2.3 * ((heightCm - 152.4) / 2.54);
+    }
+    
+    const difference = weightKg - idealWeight;
+    const standardDeviation = 8; // Approximate standard deviation
+    const zScore = difference / standardDeviation;
+    
+    // Convert Z-score to percentile
+    return Math.round((0.5 + 0.5 * Math.erf(zScore / Math.sqrt(2))) * 100);
+}
+
+// Math.erf approximation
+Math.erf = function(x) {
+    const a1 =  0.254829592;
+    const a2 = -0.284496736;
+    const a3 =  1.421413741;
+    const a4 = -1.453152027;
+    const a5 =  1.061405429;
+    const p  =  0.3275911;
+    
+    const sign = x >= 0 ? 1 : -1;
+    x = Math.abs(x);
+    
+    const t = 1.0 / (1.0 + p * x);
+    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+    
+    return sign * y;
+};
+
+function displayHealthResults(bmi, heightPercentile, weightPercentile, heightCm, weightKg) {
+    const resultsDiv = document.getElementById('hw-results');
+    const bmiValue = document.getElementById('bmi-value');
+    const bmiStatus = document.getElementById('bmi-status');
+    const heightPercentileEl = document.getElementById('height-percentile');
+    const heightStatus = document.getElementById('height-status');
+    const weightPercentileEl = document.getElementById('weight-percentile');
+    const weightStatus = document.getElementById('weight-status');
+    const recommendations = document.getElementById('hw-recommendations');
+
+    // Display BMI
+    bmiValue.textContent = bmi.toFixed(1);
+    if (bmi < 18.5) {
+        bmiStatus.textContent = 'Underweight';
+        bmiStatus.className = 'hw-result-status attention';
+    } else if (bmi < 25) {
+        bmiStatus.textContent = 'Normal';
+        bmiStatus.className = 'hw-result-status healthy';
+    } else if (bmi < 30) {
+        bmiStatus.textContent = 'Overweight';
+        bmiStatus.className = 'hw-result-status warning';
+    } else {
+        bmiStatus.textContent = 'Obese';
+        bmiStatus.className = 'hw-result-status attention';
+    }
+
+    // Display Height Percentile
+    heightPercentileEl.textContent = heightPercentile + '%';
+    if (heightPercentile < 25) {
+        heightStatus.textContent = 'Below Average';
+        heightStatus.className = 'hw-result-status attention';
+    } else if (heightPercentile < 75) {
+        heightStatus.textContent = 'Average';
+        heightStatus.className = 'hw-result-status healthy';
+    } else {
+        heightStatus.textContent = 'Above Average';
+        heightStatus.className = 'hw-result-status healthy';
+    }
+
+    // Display Weight Percentile
+    weightPercentileEl.textContent = weightPercentile + '%';
+    if (weightPercentile < 25) {
+        weightStatus.textContent = 'Below Average';
+        weightStatus.className = 'hw-result-status attention';
+    } else if (weightPercentile < 75) {
+        weightStatus.textContent = 'Average';
+        weightStatus.className = 'hw-result-status healthy';
+    } else {
+        weightStatus.textContent = 'Above Average';
+        weightStatus.className = 'hw-result-status warning';
+    }
+
+    // Generate recommendations
+    generateHealthRecommendations(bmi, heightPercentile, weightPercentile, recommendations);
+
+    // Show results
+    resultsDiv.classList.remove('hidden');
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function generateHealthRecommendations(bmi, heightPercentile, weightPercentile, recommendationsEl) {
+    let recommendations = [];
+    
+    // BMI-based recommendations
+    if (bmi < 18.5) {
+        recommendations.push('Consider increasing your caloric intake with healthy foods');
+        recommendations.push('Include protein-rich foods in your diet');
+        recommendations.push('Consult a nutritionist for personalized advice');
+    } else if (bmi >= 25) {
+        recommendations.push('Focus on balanced nutrition and portion control');
+        recommendations.push('Increase physical activity to 150+ minutes per week');
+        recommendations.push('Consider consulting a healthcare provider');
+    } else {
+        recommendations.push('Maintain your current healthy lifestyle');
+        recommendations.push('Continue regular exercise and balanced diet');
+    }
+
+    // Height-based recommendations
+    if (heightPercentile < 25) {
+        recommendations.push('Ensure adequate nutrition for optimal growth');
+        recommendations.push('Get sufficient sleep (7-9 hours)');
+        recommendations.push('Include calcium-rich foods in your diet');
+    }
+
+    // Weight-based recommendations
+    if (weightPercentile < 25) {
+        recommendations.push('Focus on nutrient-dense foods');
+        recommendations.push('Consider strength training exercises');
+    } else if (weightPercentile >= 75) {
+        recommendations.push('Monitor portion sizes');
+        recommendations.push('Increase cardiovascular exercise');
+    }
+
+    // Display recommendations
+    recommendationsEl.innerHTML = `
+        <h5>💡 Health Recommendations</h5>
+        <ul>
+            ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+        </ul>
+    `;
+}
