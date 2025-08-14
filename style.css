@@ -1560,6 +1560,588 @@ body.dark .footer-link:hover { color: #60a5fa; }
     }
 }
 
+/* ===== ASTROLOGY & LIFE PREDICTIONS STYLES ===== */
+
+.astrology-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    border: 2px solid #667eea;
+    color: white;
+}
+
+body.dark .astrology-section {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+}
+
+/* Birth Time Input Styles */
+.birth-time-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.birth-time-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.time-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.time-input-group label {
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+}
+
+.time-input, .place-input {
+    padding: 10px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #374151;
+    transition: all 0.3s ease;
+}
+
+.time-input:focus, .place-input:focus {
+    border-color: #fbbf24;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+}
+
+.prediction-btn {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #1f2937;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.prediction-btn:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+/* Zodiac & Planetary Info */
+.zodiac-planetary-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.planetary-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.planetary-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+
+.planetary-details {
+    flex: 1;
+}
+
+.planetary-name {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.planetary-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+}
+
+/* Predictions Container */
+.predictions-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.prediction-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.prediction-card:hover {
+    transform: translateY(-5px);
+}
+
+.prediction-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.prediction-icon {
+    font-size: 1.5rem;
+}
+
+.prediction-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.prediction-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 15px;
+}
+
+.prediction-remedy {
+    background: rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    color: #fbbf24;
+}
+
+/* Lucky Elements */
+.lucky-elements {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.lucky-element {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.lucky-element-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+}
+
+.lucky-element-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+/* Daily Horoscope */
+.daily-horoscope {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.horoscope-content {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .birth-time-inputs {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .zodiac-planetary-info {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .predictions-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .lucky-elements {
+        grid-template-columns: 1fr;
+    }
+    
+    .astrology-section {
+        padding: 15px;
+    }
+    
+    .birth-time-container {
+        padding: 15px;
+    }
+}
+
+/* ===== LIFE LINE & LOVE LIFE LINE STYLES ===== */
+
+.life-love-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+}
+
+body.dark .life-love-section {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-color: #334155;
+}
+
+/* Life Line Styles */
+.life-line-container {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .life-line-container {
+    background: #1e293b;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.life-line-progress {
+    margin: 15px 0;
+}
+
+.life-line-bar {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+body.dark .life-line-bar {
+    background: #334155;
+}
+
+.life-line-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 6px;
+    transition: width 1s ease;
+    position: relative;
+}
+
+.life-line-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+.life-line-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.life-stat {
+    text-align: center;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+body.dark .life-stat {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+.stat-value {
+    display: block;
+    font-size: 20px;
+    font-weight: 700;
+    color: #10b981;
+    margin-bottom: 5px;
+}
+
+body.dark .stat-value {
+    color: #6ee7b7;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+body.dark .stat-label {
+    color: #94a3b8;
+}
+
+/* Love Life Line Styles */
+.love-life-container {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .love-life-container {
+    background: #1e293b;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.love-life-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.love-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.love-input-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+body.dark .love-input-group label {
+    color: #e5e7eb;
+}
+
+.love-select, .love-input {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+body.dark .love-select, body.dark .love-input {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e5e7eb;
+}
+
+.love-select:focus, .love-input:focus {
+    border-color: #ec4899;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+}
+
+.love-life-progress {
+    margin: 15px 0;
+}
+
+.love-life-bar {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+body.dark .love-life-bar {
+    background: #334155;
+}
+
+.love-life-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ec4899, #be185d);
+    border-radius: 6px;
+    transition: width 1s ease;
+    position: relative;
+}
+
+.love-life-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+.love-life-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.love-stat {
+    text-align: center;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+body.dark .love-stat {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+.love-stat .stat-value {
+    color: #ec4899;
+}
+
+body.dark .love-stat .stat-value {
+    color: #f9a8d4;
+}
+
+/* Life vs Love Comparison */
+.life-love-comparison {
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+body.dark .life-love-comparison {
+    background: #1e293b;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.comparison-chart {
+    margin: 15px 0;
+}
+
+.comparison-item {
+    margin-bottom: 15px;
+}
+
+.comparison-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+body.dark .comparison-label {
+    color: #e5e7eb;
+}
+
+.comparison-bar {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+body.dark .comparison-bar {
+    background: #334155;
+}
+
+.comparison-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+.comparison-fill.life-fill {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.comparison-fill.love-fill {
+    background: linear-gradient(90deg, #ec4899, #be185d);
+}
+
+/* Insights Styles */
+.life-insights, .love-insights, .comparison-insight {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f0f9ff;
+    border: 1px solid #0ea5e9;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #0369a1;
+}
+
+body.dark .life-insights, body.dark .love-insights, body.dark .comparison-insight {
+    background: #0c4a6e;
+    border-color: #0ea5e9;
+    color: #7dd3fc;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .life-line-stats, .love-life-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .love-life-inputs {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .life-love-section {
+        padding: 15px;
+    }
+    
+    .life-line-container, .love-life-container, .life-love-comparison {
+        padding: 12px;
+    }
+}
+
 /* ===== HEIGHT & WEIGHT CALCULATOR STYLES ===== */
 
 .height-weight-section {

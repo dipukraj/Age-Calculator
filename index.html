@@ -108,6 +108,224 @@
                 </div>
             </div>
 
+            <!-- Astrology & Life Predictions Section -->
+            <div class="astrology-section">
+                <h3 class="section-title">🔮 Astrology & Life Predictions</h3>
+                
+                <!-- Birth Time Input -->
+                <div class="birth-time-container">
+                    <h4 class="subsection-title">⏰ Birth Time (Optional - for accurate predictions)</h4>
+                    <div class="birth-time-inputs">
+                        <div class="time-input-group">
+                            <label for="birth-hour">Hour (24-hour format)</label>
+                            <input type="number" id="birth-hour" class="time-input" min="0" max="23" placeholder="e.g., 14">
+                        </div>
+                        <div class="time-input-group">
+                            <label for="birth-minute">Minute</label>
+                            <input type="number" id="birth-minute" class="time-input" min="0" max="59" placeholder="e.g., 30">
+                        </div>
+                        <div class="time-input-group">
+                            <label for="birth-place">Birth Place (City)</label>
+                            <input type="text" id="birth-place" class="place-input" placeholder="e.g., Mumbai, India">
+                        </div>
+                    </div>
+                    <button id="generate-predictions-btn" class="prediction-btn">🔮 Generate Life Predictions</button>
+                </div>
+
+                <!-- Astrology Results -->
+                <div class="astrology-results hidden" id="astrology-results">
+                    <!-- Zodiac & Planetary Info -->
+                    <div class="zodiac-planetary-info">
+                        <div class="planetary-card">
+                            <div class="planetary-icon">☀️</div>
+                            <div class="planetary-details">
+                                <div class="planetary-name">Sun Sign</div>
+                                <div class="planetary-value" id="sun-sign">—</div>
+                            </div>
+                        </div>
+                        <div class="planetary-card">
+                            <div class="planetary-icon">🌙</div>
+                            <div class="planetary-details">
+                                <div class="planetary-name">Moon Sign</div>
+                                <div class="planetary-value" id="moon-sign">—</div>
+                            </div>
+                        </div>
+                        <div class="planetary-card">
+                            <div class="planetary-icon">⭐</div>
+                            <div class="planetary-details">
+                                <div class="planetary-name">Rising Sign</div>
+                                <div class="planetary-value" id="rising-sign">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Life Predictions -->
+                    <div class="predictions-container">
+                        <!-- Love Life Predictions -->
+                        <div class="prediction-card love-prediction">
+                            <div class="prediction-header">
+                                <span class="prediction-icon">💕</span>
+                                <h5 class="prediction-title">Love Life Analysis</h5>
+                            </div>
+                            <div class="prediction-content" id="love-prediction">
+                                <!-- Love predictions will be populated by JavaScript -->
+                            </div>
+                            <div class="prediction-remedy" id="love-remedy">
+                                <!-- Love remedies will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Study/Career Predictions -->
+                        <div class="prediction-card study-prediction">
+                            <div class="prediction-header">
+                                <span class="prediction-icon">📚</span>
+                                <h5 class="prediction-title">Study & Career Insights</h5>
+                            </div>
+                            <div class="prediction-content" id="study-prediction">
+                                <!-- Study predictions will be populated by JavaScript -->
+                            </div>
+                            <div class="prediction-remedy" id="study-remedy">
+                                <!-- Study remedies will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Life Challenges -->
+                        <div class="prediction-card challenge-prediction">
+                            <div class="prediction-header">
+                                <span class="prediction-icon">🎯</span>
+                                <h5 class="prediction-title">Life Challenges & Solutions</h5>
+                            </div>
+                            <div class="prediction-content" id="challenge-prediction">
+                                <!-- Challenge predictions will be populated by JavaScript -->
+                            </div>
+                            <div class="prediction-remedy" id="challenge-remedy">
+                                <!-- Challenge remedies will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Lucky Elements -->
+                        <div class="prediction-card lucky-prediction">
+                            <div class="prediction-header">
+                                <span class="prediction-icon">🍀</span>
+                                <h5 class="prediction-title">Your Lucky Elements</h5>
+                            </div>
+                            <div class="lucky-elements" id="lucky-elements">
+                                <!-- Lucky elements will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Horoscope -->
+                    <div class="daily-horoscope">
+                        <h4 class="subsection-title">📅 Today's Horoscope</h4>
+                        <div class="horoscope-content" id="daily-horoscope">
+                            <!-- Daily horoscope will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Life Line & Love Life Line Section -->
+            <div class="life-love-section">
+                <h3 class="section-title">✨ Life Line & Love Life Line</h3>
+                
+                <!-- Life Line -->
+                <div class="life-line-container">
+                    <h4 class="subsection-title">💫 Your Life Line</h4>
+                    <div class="life-line-progress">
+                        <div class="life-line-bar">
+                            <div class="life-line-fill" id="life-line-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="life-line-stats">
+                            <div class="life-stat">
+                                <span class="stat-value" id="life-expectancy">75</span>
+                                <span class="stat-label">Expected Years</span>
+                            </div>
+                            <div class="life-stat">
+                                <span class="stat-value" id="life-completed">0</span>
+                                <span class="stat-label">Years Completed</span>
+                            </div>
+                            <div class="life-stat">
+                                <span class="stat-value" id="life-remaining">75</span>
+                                <span class="stat-label">Years Remaining</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="life-insights" id="life-insights">
+                        <!-- Life insights will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Love Life Line -->
+                <div class="love-life-container">
+                    <h4 class="subsection-title">💕 Your Love Life Line</h4>
+                    <div class="love-life-inputs">
+                        <div class="love-input-group">
+                            <label for="relationship-status">Relationship Status</label>
+                            <select id="relationship-status" class="love-select">
+                                <option value="single">Single</option>
+                                <option value="dating">Dating</option>
+                                <option value="engaged">Engaged</option>
+                                <option value="married">Married</option>
+                                <option value="complicated">It's Complicated</option>
+                            </select>
+                        </div>
+                        <div class="love-input-group">
+                            <label for="relationship-duration">Current Relationship Duration (Years)</label>
+                            <input type="number" id="relationship-duration" class="love-input" min="0" max="50" value="0">
+                        </div>
+                        <div class="love-input-group">
+                            <label for="total-relationships">Total Relationships in Life</label>
+                            <input type="number" id="total-relationships" class="love-input" min="0" max="20" value="0">
+                        </div>
+                    </div>
+                    <div class="love-life-progress">
+                        <div class="love-life-bar">
+                            <div class="love-life-fill" id="love-life-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="love-life-stats">
+                            <div class="love-stat">
+                                <span class="stat-value" id="love-age">0</span>
+                                <span class="stat-label">Love Age</span>
+                            </div>
+                            <div class="love-stat">
+                                <span class="stat-value" id="single-time">0</span>
+                                <span class="stat-label">Single Time</span>
+                            </div>
+                            <div class="love-stat">
+                                <span class="stat-value" id="love-percentage">0%</span>
+                                <span class="stat-label">Love % of Life</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="love-insights" id="love-insights">
+                        <!-- Love insights will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Life vs Love Comparison -->
+                <div class="life-love-comparison">
+                    <h4 class="subsection-title">⚖️ Life vs Love Comparison</h4>
+                    <div class="comparison-chart">
+                        <div class="comparison-item">
+                            <div class="comparison-label">Life Progress</div>
+                            <div class="comparison-bar">
+                                <div class="comparison-fill life-fill" id="life-comparison-fill"></div>
+                            </div>
+                        </div>
+                        <div class="comparison-item">
+                            <div class="comparison-label">Love Progress</div>
+                            <div class="comparison-bar">
+                                <div class="comparison-fill love-fill" id="love-comparison-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comparison-insight" id="comparison-insight">
+                        <!-- Comparison insight will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
             <h3 class="section-title">Total Time Lived</h3>
             <div class="result-box totals-box">
                 <div class="result-item">

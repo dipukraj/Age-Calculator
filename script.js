@@ -425,6 +425,9 @@ function render(dob) {
     
     // Update new Visual Enhancements and Social Features
     enhanceAgeCalculation(dob, now);
+    
+    // Update Life Line & Love Life Line
+    updateLifeLoveLines(dob, now, age.years);
 }
 
 function startTicker(dob) {
@@ -788,6 +791,12 @@ $('share-btn').addEventListener('click', async () => {
 
         // Initialize Height & Weight Calculator
         initializeHeightWeightCalculator();
+        
+        // Initialize Life Line & Love Life Line
+        initializeLoveLifeInputs();
+        
+        // Initialize Astrology Features
+        initializeAstrologyFeatures();
     });
 
     // Age calculation enhancement functions
@@ -817,6 +826,481 @@ $('share-btn').addEventListener('click', async () => {
         const whatsappText = `🎂 My age journey: ${years} years, ${months} months, ${days} days! #AgeCalculator`;
         document.querySelector('#whatsapp-preview .preview-text').textContent = whatsappText;
     }
+
+// Life Line & Love Life Line Functions
+function updateLifeLoveLines(dob, now, currentAge) {
+    // Calculate Life Line
+    calculateLifeLine(currentAge);
+    
+    // Calculate Love Life Line
+    calculateLoveLifeLine(currentAge);
+    
+    // Update comparison
+    updateLifeLoveComparison();
+}
+
+function calculateLifeLine(currentAge) {
+    // Calculate life expectancy based on age and general factors
+    let lifeExpectancy = 75; // Base expectancy
+    
+    // Adjust based on current age (people who live longer tend to live even longer)
+    if (currentAge > 60) {
+        lifeExpectancy = 85;
+    } else if (currentAge > 40) {
+        lifeExpectancy = 80;
+    } else if (currentAge > 20) {
+        lifeExpectancy = 78;
+    }
+    
+    const yearsCompleted = currentAge;
+    const yearsRemaining = Math.max(0, lifeExpectancy - currentAge);
+    const lifeProgress = (yearsCompleted / lifeExpectancy) * 100;
+    
+    // Update UI
+    $('life-expectancy').textContent = lifeExpectancy;
+    $('life-completed').textContent = yearsCompleted;
+    $('life-remaining').textContent = yearsRemaining;
+    $('life-line-fill').style.width = Math.min(lifeProgress, 100) + '%';
+    
+    // Generate life insights
+    generateLifeInsights(currentAge, lifeExpectancy, yearsRemaining);
+}
+
+function calculateLoveLifeLine(currentAge) {
+    const relationshipStatus = $('relationship-status').value;
+    const relationshipDuration = parseFloat($('relationship-duration').value) || 0;
+    const totalRelationships = parseFloat($('total-relationships').value) || 0;
+    
+    // Calculate love age (total time in relationships)
+    let loveAge = relationshipDuration;
+    
+    // Add estimated time from previous relationships (if any)
+    if (totalRelationships > 1) {
+        const avgRelationshipLength = 2; // Average 2 years per relationship
+        loveAge += (totalRelationships - 1) * avgRelationshipLength;
+    }
+    
+    // Calculate single time
+    const singleTime = Math.max(0, currentAge - loveAge);
+    
+    // Calculate love percentage of life
+    const lovePercentage = currentAge > 0 ? (loveAge / currentAge) * 100 : 0;
+    
+    // Update UI
+    $('love-age').textContent = loveAge.toFixed(1);
+    $('single-time').textContent = singleTime.toFixed(1);
+    $('love-percentage').textContent = lovePercentage.toFixed(1) + '%';
+    $('love-life-fill').style.width = Math.min(lovePercentage, 100) + '%';
+    
+    // Generate love insights
+    generateLoveInsights(currentAge, loveAge, singleTime, relationshipStatus);
+}
+
+function updateLifeLoveComparison() {
+    const currentAge = parseFloat($('life-completed').textContent);
+    const lifeExpectancy = parseFloat($('life-expectancy').textContent);
+    const loveAge = parseFloat($('love-age').textContent);
+    
+    const lifeProgress = (currentAge / lifeExpectancy) * 100;
+    const loveProgress = currentAge > 0 ? (loveAge / currentAge) * 100 : 0;
+    
+    // Update comparison bars
+    $('life-comparison-fill').style.width = Math.min(lifeProgress, 100) + '%';
+    $('love-comparison-fill').style.width = Math.min(loveProgress, 100) + '%';
+    
+    // Generate comparison insight
+    generateComparisonInsight(lifeProgress, loveProgress);
+}
+
+function generateLifeInsights(currentAge, lifeExpectancy, yearsRemaining) {
+    let insights = [];
+    
+    if (currentAge < 18) {
+        insights.push("🌟 You're in the exciting phase of youth and discovery!");
+        insights.push("💡 Focus on education and personal growth.");
+    } else if (currentAge < 30) {
+        insights.push("🚀 You're in your prime years - make the most of them!");
+        insights.push("💼 Build your career and relationships.");
+    } else if (currentAge < 50) {
+        insights.push("🏠 You're in the establishment phase of life.");
+        insights.push("⚖️ Balance work, family, and personal time.");
+    } else if (currentAge < 70) {
+        insights.push("🌅 You're in the golden years - enjoy your wisdom!");
+        insights.push("🎯 Focus on what truly matters to you.");
+    } else {
+        insights.push("👑 You're a living legend with incredible life experience!");
+        insights.push("💎 Share your wisdom with younger generations.");
+    }
+    
+    if (yearsRemaining > 0) {
+        insights.push(`⏰ You have approximately ${yearsRemaining} years ahead to create more memories.`);
+    }
+    
+    $('life-insights').innerHTML = `<strong>💭 Life Insights:</strong><br>${insights.join('<br>')}`;
+}
+
+function generateLoveInsights(currentAge, loveAge, singleTime, relationshipStatus) {
+    let insights = [];
+    
+    if (relationshipStatus === 'single') {
+        if (singleTime > currentAge * 0.8) {
+            insights.push("💫 You're enjoying your independence and freedom!");
+            insights.push("💝 Love will find you when you're ready.");
+        } else {
+            insights.push("💕 You've experienced love and are currently single.");
+            insights.push("🔄 Life has cycles - this is just a phase.");
+        }
+    } else if (relationshipStatus === 'dating') {
+        insights.push("💑 You're in the exciting dating phase!");
+        insights.push("🌹 Enjoy getting to know each other.");
+    } else if (relationshipStatus === 'engaged') {
+        insights.push("💍 You're about to start a beautiful journey together!");
+        insights.push("🎉 Congratulations on your engagement!");
+    } else if (relationshipStatus === 'married') {
+        insights.push("💒 You've made a beautiful commitment to love!");
+        insights.push("❤️ Marriage is a journey of growth together.");
+    } else {
+        insights.push("💭 Love is complex and beautiful.");
+        insights.push("🌈 Every relationship teaches us something valuable.");
+    }
+    
+    const lovePercentage = currentAge > 0 ? (loveAge / currentAge) * 100 : 0;
+    if (lovePercentage > 50) {
+        insights.push("💖 You've spent most of your life in relationships - you're a romantic soul!");
+    } else if (lovePercentage < 20) {
+        insights.push("🌟 You've enjoyed your independence and personal growth!");
+    }
+    
+    $('love-insights').innerHTML = `<strong>💭 Love Insights:</strong><br>${insights.join('<br>')}`;
+}
+
+function generateComparisonInsight(lifeProgress, loveProgress) {
+    let insight = "";
+    
+    if (loveProgress > lifeProgress) {
+        insight = "💕 Love has been a bigger part of your life than average! You're a romantic at heart.";
+    } else if (loveProgress < lifeProgress * 0.3) {
+        insight = "🌟 You've focused more on personal growth and independence. Both paths are beautiful!";
+    } else {
+        insight = "⚖️ You have a balanced approach to life and love. Well done!";
+    }
+    
+    $('comparison-insight').innerHTML = `<strong>💭 Comparison Insight:</strong><br>${insight}`;
+}
+
+// Astrology & Life Predictions Functions
+function initializeAstrologyFeatures() {
+    const generateBtn = $('generate-predictions-btn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', generateAstrologyPredictions);
+    }
+}
+
+function generateAstrologyPredictions() {
+    const dob = dobInputEl.value ? new Date(dobInputEl.value) : null;
+    if (!dob) {
+        alert('Please enter your date of birth first!');
+        return;
+    }
+
+    const birthHour = parseInt($('birth-hour').value) || 12;
+    const birthMinute = parseInt($('birth-minute').value) || 0;
+    const birthPlace = $('birth-place').value || 'Unknown';
+
+    // Calculate zodiac signs
+    const sunSign = getZodiacSign(dob.getMonth() + 1, dob.getDate());
+    const moonSign = calculateMoonSign(dob, birthHour, birthMinute);
+    const risingSign = calculateRisingSign(dob, birthHour, birthMinute);
+
+    // Update planetary info
+    $('sun-sign').textContent = sunSign.name;
+    $('moon-sign').textContent = moonSign;
+    $('rising-sign').textContent = risingSign;
+
+    // Generate predictions
+    generateLovePredictions(sunSign, moonSign);
+    generateStudyPredictions(sunSign, risingSign);
+    generateChallengePredictions(sunSign, moonSign);
+    generateLuckyElements(sunSign, moonSign);
+    generateDailyHoroscope(sunSign);
+
+    // Show results
+    $('astrology-results').classList.remove('hidden');
+    $('astrology-results').scrollIntoView({ behavior: 'smooth' });
+}
+
+function calculateMoonSign(dob, hour, minute) {
+    // Simplified moon sign calculation based on birth date and time
+    const moonSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
+                      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    
+    const dayOfYear = Math.floor((dob - new Date(dob.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const timeFactor = hour + minute / 60;
+    const moonIndex = Math.floor((dayOfYear + timeFactor / 24) / 2.5) % 12;
+    
+    return moonSigns[moonIndex];
+}
+
+function calculateRisingSign(dob, hour, minute) {
+    // Simplified rising sign calculation
+    const risingSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
+                        'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    
+    const month = dob.getMonth();
+    const timeFactor = hour + minute / 60;
+    const risingIndex = Math.floor((month * 2 + timeFactor / 2) % 12);
+    
+    return risingSigns[risingIndex];
+}
+
+function generateLovePredictions(sunSign, moonSign) {
+    const lovePredictions = {
+        'Aries': {
+            prediction: "Your fiery nature makes you passionate in love. You need someone who can match your energy and independence. You're currently seeking excitement and adventure in relationships.",
+            remedy: "💝 Practice patience and listen to your partner's needs. Wear red or pink on Fridays for love luck."
+        },
+        'Taurus': {
+            prediction: "You're loyal and devoted in love, seeking stability and security. You value physical affection and material comforts. Your love life needs more spontaneity.",
+            remedy: "🌹 Express your feelings more openly. Wear green or pink colors. Practice gratitude for love."
+        },
+        'Gemini': {
+            prediction: "You're communicative and curious in love, but sometimes struggle with commitment. You need intellectual stimulation in relationships. Your love life needs more emotional depth.",
+            remedy: "💬 Focus on deep conversations with your partner. Wear yellow or light blue. Practice emotional consistency."
+        },
+        'Cancer': {
+            prediction: "You're nurturing and protective in love, creating strong emotional bonds. You need security and family connection. Your love life is blessed with emotional intelligence.",
+            remedy: "🏠 Create a loving home environment. Wear white or silver. Practice self-care and emotional balance."
+        },
+        'Leo': {
+            prediction: "You're generous and dramatic in love, seeking admiration and loyalty. You need to be the center of attention. Your love life needs more humility and compromise.",
+            remedy: "👑 Share the spotlight with your partner. Wear gold or orange. Practice generosity without expecting returns."
+        },
+        'Virgo': {
+            prediction: "You're practical and helpful in love, but sometimes too critical. You seek perfection and order. Your love life needs more acceptance and less analysis.",
+            remedy: "✨ Accept imperfections in love. Wear green or brown. Practice unconditional acceptance."
+        },
+        'Libra': {
+            prediction: "You're diplomatic and romantic in love, seeking harmony and balance. You avoid conflict and need partnership. Your love life needs more assertiveness.",
+            remedy: "⚖️ Stand up for your needs in relationships. Wear pink or light blue. Practice healthy boundaries."
+        },
+        'Scorpio': {
+            prediction: "You're intense and passionate in love, seeking deep emotional connection. You're loyal but can be possessive. Your love life needs more trust and letting go.",
+            remedy: "🦂 Practice trust and vulnerability. Wear deep red or black. Release control in relationships."
+        },
+        'Sagittarius': {
+            prediction: "You're adventurous and optimistic in love, seeking freedom and growth. You need space and intellectual stimulation. Your love life needs more commitment and focus.",
+            remedy: "🏹 Commit to one person and build depth. Wear purple or blue. Practice emotional availability."
+        },
+        'Capricorn': {
+            prediction: "You're responsible and ambitious in love, seeking stability and long-term commitment. You're patient but can be reserved. Your love life needs more emotional expression.",
+            remedy: "🐐 Express your feelings more openly. Wear dark green or brown. Practice emotional vulnerability."
+        },
+        'Aquarius': {
+            prediction: "You're unique and independent in love, seeking intellectual connection and freedom. You're humanitarian but can be detached. Your love life needs more emotional intimacy.",
+            remedy: "♒ Connect emotionally with your partner. Wear electric blue or purple. Practice emotional closeness."
+        },
+        'Pisces': {
+            prediction: "You're compassionate and intuitive in love, seeking spiritual connection. You're romantic but can be idealistic. Your love life needs more practical boundaries.",
+            remedy: "🐟 Set healthy boundaries in love. Wear sea green or purple. Practice grounding and reality checks."
+        }
+    };
+
+    const prediction = lovePredictions[sunSign.name] || lovePredictions['Aries'];
+    $('love-prediction').innerHTML = prediction.prediction;
+    $('love-remedy').innerHTML = `<strong>💫 Remedy:</strong> ${prediction.remedy}`;
+}
+
+function generateStudyPredictions(sunSign, risingSign) {
+    const studyPredictions = {
+        'Aries': {
+            prediction: "You excel in competitive environments and leadership roles. Your energy helps you tackle challenging subjects. Focus on practical applications of your studies.",
+            remedy: "📚 Study in short, intense sessions. Use red notebooks. Take breaks to maintain focus."
+        },
+        'Taurus': {
+            prediction: "You have excellent memory and practical learning abilities. You prefer hands-on learning and stable study environments. Your patience helps with complex subjects.",
+            remedy: "📖 Create a comfortable study space. Use green stationery. Study with background music."
+        },
+        'Gemini': {
+            prediction: "You're naturally curious and learn quickly. You excel in communication and technology subjects. Your adaptability helps with diverse topics.",
+            remedy: "💻 Study in different locations. Use yellow highlighters. Discuss topics with others."
+        },
+        'Cancer': {
+            prediction: "You have strong intuitive learning abilities and excellent memory. You prefer familiar study environments. Your emotional intelligence helps with humanities.",
+            remedy: "🏠 Study at home or familiar places. Use white paper. Create emotional connections to topics."
+        },
+        'Leo': {
+            prediction: "You learn best through teaching others and creative expression. You excel in subjects that allow self-expression. Your confidence helps with presentations.",
+            remedy: "👑 Study with others and explain concepts. Use gold pens. Create study presentations."
+        },
+        'Virgo': {
+            prediction: "You have excellent analytical skills and attention to detail. You prefer organized study methods and practical subjects. Your perfectionism helps with accuracy.",
+            remedy: "📝 Create detailed study plans. Use green notebooks. Focus on practical applications."
+        },
+        'Libra': {
+            prediction: "You learn best through discussion and collaboration. You excel in subjects requiring balance and fairness. Your diplomacy helps with group projects.",
+            remedy: "⚖️ Study with partners or groups. Use pink stationery. Create balanced study schedules."
+        },
+        'Scorpio': {
+            prediction: "You have deep analytical abilities and excellent research skills. You prefer intense, focused study sessions. Your intuition helps with complex subjects.",
+            remedy: "🦂 Study in private, quiet spaces. Use deep red pens. Research topics thoroughly."
+        },
+        'Sagittarius': {
+            prediction: "You learn best through exploration and big-picture thinking. You excel in philosophy and international subjects. Your optimism helps with challenging topics.",
+            remedy: "🏹 Study in open spaces. Use purple notebooks. Connect topics to larger concepts."
+        },
+        'Capricorn': {
+            prediction: "You have excellent discipline and long-term planning abilities. You prefer structured learning and practical subjects. Your ambition drives academic success.",
+            remedy: "🐐 Create long-term study goals. Use dark green materials. Study systematically."
+        },
+        'Aquarius': {
+            prediction: "You have innovative thinking and excel in technology and science. You prefer unconventional study methods. Your originality helps with creative solutions.",
+            remedy: "♒ Use technology in studying. Use electric blue materials. Think outside the box."
+        },
+        'Pisces': {
+            prediction: "You have strong creative and intuitive learning abilities. You excel in arts and humanities. Your empathy helps with understanding complex topics.",
+            remedy: "🐟 Study with music or art. Use sea green materials. Trust your intuition."
+        }
+    };
+
+    const prediction = studyPredictions[sunSign.name] || studyPredictions['Aries'];
+    $('study-prediction').innerHTML = prediction.prediction;
+    $('study-remedy').innerHTML = `<strong>💫 Remedy:</strong> ${prediction.remedy}`;
+}
+
+function generateChallengePredictions(sunSign, moonSign) {
+    const challengePredictions = {
+        'Aries': {
+            prediction: "Your main challenge is patience and impulsiveness. You need to think before acting and consider others' feelings. Focus on developing emotional intelligence.",
+            remedy: "🧘 Practice meditation and patience. Count to 10 before reacting. Practice active listening."
+        },
+        'Taurus': {
+            prediction: "Your main challenge is stubbornness and resistance to change. You need to be more flexible and open to new experiences. Focus on adaptability.",
+            remedy: "🔄 Try new things regularly. Practice flexibility exercises. Embrace change gradually."
+        },
+        'Gemini': {
+            prediction: "Your main challenge is inconsistency and scattered energy. You need to focus and commit to long-term goals. Focus on follow-through.",
+            remedy: "🎯 Create daily routines. Use planners and reminders. Practice finishing what you start."
+        },
+        'Cancer': {
+            prediction: "Your main challenge is emotional sensitivity and moodiness. You need to develop emotional resilience and boundaries. Focus on emotional balance.",
+            remedy: "🛡️ Practice emotional boundaries. Use grounding techniques. Practice self-soothing."
+        },
+        'Leo': {
+            prediction: "Your main challenge is ego and need for attention. You need to share the spotlight and practice humility. Focus on genuine connections.",
+            remedy: "🌟 Practice humility and gratitude. Share credit with others. Focus on giving attention."
+        },
+        'Virgo': {
+            prediction: "Your main challenge is perfectionism and overthinking. You need to accept imperfection and trust your instincts. Focus on self-acceptance.",
+            remedy: "✨ Practice self-acceptance. Use 'good enough' approach. Trust your intuition."
+        },
+        'Libra': {
+            prediction: "Your main challenge is indecisiveness and people-pleasing. You need to make decisions confidently and prioritize your needs. Focus on assertiveness.",
+            remedy: "⚖️ Practice decision-making. Set personal boundaries. Prioritize your needs."
+        },
+        'Scorpio': {
+            prediction: "Your main challenge is control and trust issues. You need to let go of control and trust others. Focus on vulnerability and openness.",
+            remedy: "🦂 Practice trust and letting go. Share your feelings openly. Release control."
+        },
+        'Sagittarius': {
+            prediction: "Your main challenge is restlessness and commitment issues. You need to commit to long-term goals and relationships. Focus on stability.",
+            remedy: "🏹 Create long-term commitments. Practice staying in one place. Build deep connections."
+        },
+        'Capricorn': {
+            prediction: "Your main challenge is workaholism and emotional repression. You need to balance work and play, express emotions. Focus on work-life balance.",
+            remedy: "🐐 Schedule fun activities. Express emotions regularly. Practice work-life balance."
+        },
+        'Aquarius': {
+            prediction: "Your main challenge is emotional detachment and rebellion. You need to connect emotionally and work within systems. Focus on emotional intimacy.",
+            remedy: "♒ Practice emotional connection. Work within existing systems. Build intimate relationships."
+        },
+        'Pisces': {
+            prediction: "Your main challenge is escapism and boundary issues. You need to stay grounded and set healthy boundaries. Focus on reality and self-care.",
+            remedy: "🐟 Practice grounding techniques. Set clear boundaries. Stay connected to reality."
+        }
+    };
+
+    const prediction = challengePredictions[sunSign.name] || challengePredictions['Aries'];
+    $('challenge-prediction').innerHTML = prediction.prediction;
+    $('challenge-remedy').innerHTML = `<strong>💫 Remedy:</strong> ${prediction.remedy}`;
+}
+
+function generateLuckyElements(sunSign, moonSign) {
+    const luckyElements = {
+        'Aries': { color: 'Red', number: '1, 9', day: 'Tuesday', gemstone: 'Ruby' },
+        'Taurus': { color: 'Green', number: '2, 6', day: 'Friday', gemstone: 'Emerald' },
+        'Gemini': { color: 'Yellow', number: '3, 7', day: 'Wednesday', gemstone: 'Pearl' },
+        'Cancer': { color: 'White', number: '2, 7', day: 'Monday', gemstone: 'Moonstone' },
+        'Leo': { color: 'Gold', number: '1, 4', day: 'Sunday', gemstone: 'Ruby' },
+        'Virgo': { color: 'Green', number: '5, 7', day: 'Wednesday', gemstone: 'Sapphire' },
+        'Libra': { color: 'Pink', number: '6, 9', day: 'Friday', gemstone: 'Opal' },
+        'Scorpio': { color: 'Deep Red', number: '4, 8', day: 'Tuesday', gemstone: 'Topaz' },
+        'Sagittarius': { color: 'Purple', number: '3, 9', day: 'Thursday', gemstone: 'Turquoise' },
+        'Capricorn': { color: 'Dark Green', number: '4, 8', day: 'Saturday', gemstone: 'Garnet' },
+        'Aquarius': { color: 'Electric Blue', number: '4, 7', day: 'Saturday', gemstone: 'Amethyst' },
+        'Pisces': { color: 'Sea Green', number: '3, 7', day: 'Thursday', gemstone: 'Aquamarine' }
+    };
+
+    const elements = luckyElements[sunSign.name] || luckyElements['Aries'];
+    
+    $('lucky-elements').innerHTML = `
+        <div class="lucky-element">
+            <div class="lucky-element-label">Lucky Color</div>
+            <div class="lucky-element-value">${elements.color}</div>
+        </div>
+        <div class="lucky-element">
+            <div class="lucky-element-label">Lucky Numbers</div>
+            <div class="lucky-element-value">${elements.number}</div>
+        </div>
+        <div class="lucky-element">
+            <div class="lucky-element-label">Lucky Day</div>
+            <div class="lucky-element-value">${elements.day}</div>
+        </div>
+        <div class="lucky-element">
+            <div class="lucky-element-label">Lucky Gemstone</div>
+            <div class="lucky-element-value">${elements.gemstone}</div>
+        </div>
+    `;
+}
+
+function generateDailyHoroscope(sunSign) {
+    const dailyHoroscopes = {
+        'Aries': "Today is perfect for taking action on your goals. Your energy is high, so use it wisely. A new opportunity may present itself - be ready to seize it!",
+        'Taurus': "Focus on stability and comfort today. It's a good day for financial planning and enjoying simple pleasures. Trust your instincts in important decisions.",
+        'Gemini': "Communication is your strength today. Share your ideas and connect with others. A conversation may lead to exciting new possibilities.",
+        'Cancer': "Your intuition is strong today. Listen to your inner voice and trust your feelings. It's a good day for family connections and emotional healing.",
+        'Leo': "Your charisma is at its peak today. Others will be drawn to your positive energy. Use this influence to inspire and lead others.",
+        'Virgo': "Attention to detail will serve you well today. Focus on organization and efficiency. A small improvement can lead to significant results.",
+        'Libra': "Balance and harmony are your themes today. Seek compromise in conflicts and create beauty in your surroundings. Relationships flourish.",
+        'Scorpio': "Your depth and intensity are powerful today. Use your insight to understand complex situations. Trust your instincts in important matters.",
+        'Sagittarius': "Adventure and learning call to you today. Explore new ideas and expand your horizons. A journey, physical or mental, awaits.",
+        'Capricorn': "Your determination and discipline are your strengths today. Focus on long-term goals and make steady progress. Success comes through persistence.",
+        'Aquarius': "Innovation and originality are your gifts today. Think outside the box and share your unique perspective. Others will appreciate your fresh ideas.",
+        'Pisces': "Creativity and intuition flow freely today. Trust your artistic instincts and spiritual insights. Dreams may hold important messages."
+    };
+
+    const horoscope = dailyHoroscopes[sunSign.name] || dailyHoroscopes['Aries'];
+    $('daily-horoscope').innerHTML = `<strong>🌟 ${sunSign.name} Daily Horoscope:</strong><br>${horoscope}`;
+}
+
+// Initialize Love Life Line inputs
+function initializeLoveLifeInputs() {
+    const inputs = ['relationship-status', 'relationship-duration', 'total-relationships'];
+    
+    inputs.forEach(inputId => {
+        const element = $(inputId);
+        if (element) {
+            element.addEventListener('change', () => {
+                const dob = dobInputEl.value ? new Date(dobInputEl.value) : null;
+                if (dob) {
+                    const now = new Date();
+                    const age = calculateAgeParts(dob, now);
+                    calculateLoveLifeLine(age.years);
+                    updateLifeLoveComparison();
+                }
+            });
+        }
+    });
+}
 
 // Height & Weight Calculator Functions
 function initializeHeightWeightCalculator() {
