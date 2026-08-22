@@ -1548,24 +1548,188 @@ body.dark-theme .social-link.github:hover {
 
 /* Responsive Breakpoints */
 @media (max-width: 900px) {
-    .main-card { padding: 24px; }
+    .main-card { padding: 28px 24px; }
     .grid-2-col, .zodiac-cards-row, .predictions-grid, .story-card-layout {
         grid-template-columns: 1fr;
     }
     .vitals-matrix { grid-template-columns: repeat(2, 1fr); }
     .hw-input-container { grid-template-columns: 1fr; }
     .love-life-inputs { grid-template-columns: 1fr; }
-    .hero-title { font-size: 1.8rem; }
+    .hero-title { font-size: 1.9rem; }
 }
 
 @media (max-width: 640px) {
-    body { padding: 15px 10px; }
-    .app-header { flex-direction: column; gap: 12px; }
-    .hero-title { font-size: 1.5rem; }
-    .age-inline { gap: 12px; }
-    .result-value { font-size: 2.2rem; }
-    .countdown-grid { grid-template-columns: repeat(2, 1fr); }
-    .totals-grid { grid-template-columns: 1fr; }
-    .planetary-mini-cards { grid-template-columns: 1fr; }
-    .tabs-nav { flex-wrap: nowrap; justify-content: flex-start; }
+    body { padding: 12px 8px; }
+    .app-wrapper { gap: 16px; }
+    
+    /* Header Mobile Adjustments */
+    .app-header {
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .creator-badge, .theme-toggle-btn {
+        font-size: 0.8rem;
+        padding: 7px 12px;
+    }
+
+    /* Main Card */
+    .main-card {
+        padding: 20px 14px;
+        border-radius: 22px;
+    }
+
+    .hero-section {
+        margin-bottom: 20px;
+    }
+
+    .hero-title {
+        font-size: 1.55rem;
+        letter-spacing: -0.5px;
+    }
+
+    .hero-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 18px;
+    }
+
+    .input-card {
+        padding: 18px 12px;
+        border-radius: 16px;
+        gap: 16px;
+    }
+
+    /* Theme Selector Bar Mobile Fix */
+    .theme-selector-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .theme-label {
+        font-size: 0.78rem;
+        justify-content: center;
+    }
+
+    .theme-options {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+    }
+
+    .theme-option {
+        padding: 6px 2px;
+        font-size: 0.7rem;
+        text-align: center;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Age Overview Mobile Fix */
+    .age-inline {
+        gap: 12px;
+    }
+
+    .result-value {
+        font-size: 2.1rem;
+    }
+
+    .inline-label {
+        font-size: 0.78rem;
+    }
+
+    .ticker-box {
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 12px;
+    }
+
+    .ticker-value {
+        font-size: 0.85rem;
+    }
+
+    .countdown-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .countdown-number {
+        font-size: 1.35rem;
+    }
+
+    .totals-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .planetary-mini-cards {
+        grid-template-columns: 1fr;
+    }
+
+    /* Tabs Navigation Mobile */
+    .tabs-nav {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 5px;
+        gap: 6px;
+    }
+
+    .tab-btn {
+        padding: 10px 14px;
+        font-size: 0.82rem;
+    }
+
+    /* Footer Mobile Responsive Fixes */
+    .app-footer {
+        padding: 20px 12px;
+        border-radius: 20px;
+        gap: 14px;
+    }
+
+    .footer-brand-badge {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 4px 6px;
+        padding: 8px 14px;
+        border-radius: 20px;
+        width: auto;
+        max-width: 100%;
+        font-size: 0.8rem;
+        line-height: 1.35;
+    }
+
+    .social-links {
+        gap: 6px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .social-link {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+        border-radius: 10px;
+    }
+
+    .footer-copyright {
+        font-size: 0.78rem;
+        line-height: 1.4;
+    }
 }
