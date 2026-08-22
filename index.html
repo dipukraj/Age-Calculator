@@ -1,590 +1,561 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Precise Age Calculator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+    <title>Precision Age Calculator | Cosmic & Life Insights</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/jpg" href="/image/age calculate logo.jpg">
-
 </head>
-<body style="scroll-behavior: smooth; -webkit-overflow-scrolling: touch;">
-    <!-- Animated Background -->
+
+<body class="light-theme">
+    <!-- Ambient Dynamic Background -->
+    <div class="ambient-mesh">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
     <div class="animated-bg" id="animated-bg"></div>
 
-    <div class="calculator-container">
-        <div class="top-bar">
-            <div class="creator-info">
-                <span class="creator-text">✨5ukoon...</span>
-                <a href="https://www.instagram.com/r.p.dipu" class="creator-link" id="creator-link">❤️</a>
+    <div class="app-wrapper">
+        <!-- Top Navigation Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">✨</div>
+                <div class="brand-text">
+                    <span class="brand-name">5ukoon</span>
+                    <span class="brand-sub">Age & Cosmic Lab</span>
+                </div>
             </div>
-            <button id="theme-toggle" class="toggle btn-secondary" type="button" aria-label="Toggle dark mode">Dark Mode</button>
-        </div>
-        <h1 class="title">Precision Age Calculator</h1>
-        <p class="subtitle">✨Discover your exact age down to the second✨</p>
-        
-        <div class="input-group">
-            <label for="dob">Enter Your Date of Birth</label>
-            <div class="date-wrapper">
-                <input type="date" id="dob" max="" class="date-input" aria-describedby="dob-format" aria-label="Date of birth" autocomplete="bday">
-                <span id="dob-placeholder" class="date-placeholder">dd-mm-yyyy</span>
-                <button id="dob-picker-btn" class="date-button" type="button" aria-label="Open calendar">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1zm12 9H5v9h14v-9zM5 8h14V6H5v2z"/></svg>
+            <div class="header-actions">
+                <a href="https://www.instagram.com/r.p.dipu" target="_blank" class="creator-badge" id="creator-link" title="Creator Profile">
+                    <span class="heart-icon">❤️</span> Dipu K Raj
+                </a>
+                <button id="theme-toggle" class="theme-toggle-btn" type="button" aria-label="Toggle theme">
+                    <i class="fa-solid fa-moon"></i>
+                    <span class="theme-text">Dark Mode</span>
                 </button>
             </div>
-            <div class="error-message" id="error-message">Please enter a valid date.</div>
-        </div>
-        
-        <button id="calculate-btn">Calculate Age</button>
-        
-        <div class="result-container hidden" id="result-container">
-            <h2 class="text-xl font-semibold text-gray-700 mb-2">Your Age Is</h2>
-            <div class="age-inline">
-                <div class="age-chip"><span class="result-value" id="years">0</span><span class="inline-label">Years</span></div>
-                <div class="age-chip"><span class="result-value" id="months">0</span><span class="inline-label">Months</span></div>
-                <div class="age-chip"><span class="result-value" id="days">0</span><span class="inline-label">Days</span></div>
-            </div>
+        </header>
 
-            <!-- Progress Bar -->
-            <div class="progress-section">
-                <h3 class="section-title">Life Progress</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="life-progress" style="width: 0%"></div>
-                </div>
-                <div id="progress-text" style="font-size: 14px; color: #718096; margin-top: 5px;">0% of average life expectancy</div>
-            </div>
+        <!-- Main Card Container -->
+        <main class="main-card">
+            <div class="hero-section">
+                <h1 class="hero-title">Precision Age & Cosmic Insights</h1>
+                <p class="hero-subtitle">Discover your exact age down to milliseconds, planetary years, astrology & vital stats</p>
 
-            <!-- Zodiac Sign -->
-            <div class="zodiac-section">
-                <div class="zodiac-icon" id="zodiac-icon">♈</div>
-                <div class="zodiac-name" id="zodiac-name">Aries</div>
-                <div class="zodiac-dates" id="zodiac-dates">Mar 21 - Apr 19</div>
-            </div>
-
-            <!-- Birthday Countdown -->
-            <div class="countdown-section">
-                <h3 class="section-title">Next Birthday Countdown</h3>
-                <div class="countdown-grid">
-                    <div class="countdown-item">
-                        <span class="countdown-number" id="countdown-days">0</span>
-                        <span class="countdown-label">Days</span>
-                    </div>
-                    <div class="countdown-item">
-                        <span class="countdown-number" id="countdown-hours">0</span>
-                        <span class="countdown-label">Hours</span>
-                    </div>
-                    <div class="countdown-item">
-                        <span class="countdown-number" id="countdown-minutes">0</span>
-                        <span class="countdown-label">Minutes</span>
-                    </div>
-                    <div class="countdown-item">
-                        <span class="countdown-number" id="countdown-seconds">0</span>
-                        <span class="countdown-label">Seconds</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Age Milestones -->
-            <div class="milestones-section">
-                <h3 class="section-title">Upcoming Milestones</h3>
-                <div id="milestones-list">
-                    <!-- Milestones will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Achievement Badges -->
-            <div class="achievements-section">
-                <h3 class="section-title">Achievements</h3>
-                <div id="achievements-list">
-                    <!-- Badges will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Life Timeline -->
-            <div class="timeline-section">
-                <h3 class="section-title">Life Timeline</h3>
-                <div class="timeline" id="life-timeline">
-                    <!-- Timeline items will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Astrology & Life Predictions Section -->
-            <div class="astrology-section">
-                <h3 class="section-title">🔮 Astrology & Life Predictions</h3>
-                
-                <!-- Birth Time Input -->
-                <div class="birth-time-container">
-                    <h4 class="subsection-title">⏰ Birth Time (Optional - for accurate predictions)</h4>
-                    <div class="birth-time-inputs">
-                        <div class="time-input-group">
-                            <label for="birth-hour">Hour (24-hour format)</label>
-                            <input type="number" id="birth-hour" class="time-input" min="0" max="23" placeholder="e.g., 14">
+                <!-- Input Card -->
+                <div class="input-card">
+                    <div class="input-group">
+                        <label for="dob">Select Your Date of Birth</label>
+                        <div class="date-wrapper">
+                            <input type="date" id="dob" class="date-input" aria-label="Date of birth">
+                            <span id="dob-placeholder" class="date-placeholder">dd-mm-yyyy</span>
+                            <button id="dob-picker-btn" class="date-button" type="button" aria-label="Open calendar">
+                                <i class="fa-regular fa-calendar-days"></i>
+                            </button>
                         </div>
-                        <div class="time-input-group">
-                            <label for="birth-minute">Minute</label>
-                            <input type="number" id="birth-minute" class="time-input" min="0" max="59" placeholder="e.g., 30">
-                        </div>
-                        <div class="time-input-group">
-                            <label for="birth-place">Birth Place (City)</label>
-                            <input type="text" id="birth-place" class="place-input" placeholder="e.g., Mumbai, India">
+                        <div class="error-message" id="error-message">Please enter a valid date.</div>
+                    </div>
+
+                    <!-- Theme Selector Bar -->
+                    <div class="theme-selector-bar">
+                        <span class="theme-label"><i class="fa-solid fa-palette"></i> Style:</span>
+                        <div class="theme-options">
+                            <button class="theme-option active" data-theme="default">Aurora</button>
+                            <button class="theme-option" data-theme="ocean">Ocean</button>
+                            <button class="theme-option" data-theme="sunset">Sunset</button>
+                            <button class="theme-option" data-theme="forest">Emerald</button>
                         </div>
                     </div>
-                    <button id="generate-predictions-btn" class="prediction-btn">🔮 Generate Life Predictions</button>
-                </div>
 
-                <!-- Astrology Results -->
-                <div class="astrology-results hidden" id="astrology-results">
-                    <!-- Zodiac & Planetary Info -->
-                    <div class="zodiac-planetary-info">
-                        <div class="planetary-card">
-                            <div class="planetary-icon">☀️</div>
-                            <div class="planetary-details">
-                                <div class="planetary-name">Sun Sign</div>
-                                <div class="planetary-value" id="sun-sign">—</div>
+                    <button id="calculate-btn" class="primary-btn">
+                        <span>Calculate Age & Insights</span>
+                        <i class="fa-solid fa-sparkles"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section (Hidden until calculated) -->
+            <div class="result-container hidden" id="result-container">
+
+                <!-- Tabbed Navigation Bar -->
+                <nav class="tabs-nav" aria-label="Result Sections">
+                    <button class="tab-btn active" data-tab="tab-overview">
+                        <i class="fa-solid fa-chart-pie"></i> Overview
+                    </button>
+                    <button class="tab-btn" data-tab="tab-planetary">
+                        <i class="fa-solid fa-globe"></i> Cosmic Age
+                    </button>
+                    <button class="tab-btn" data-tab="tab-astrology">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Astrology
+                    </button>
+                    <button class="tab-btn" data-tab="tab-health">
+                        <i class="fa-solid fa-heart-pulse"></i> Health & Vitals
+                    </button>
+                    <button class="tab-btn" data-tab="tab-timeline">
+                        <i class="fa-solid fa-timeline"></i> Life & Love
+                    </button>
+                    <button class="tab-btn" data-tab="tab-storycard">
+                        <i class="fa-solid fa-camera-retro"></i> Share Card
+                    </button>
+                </nav>
+
+                <!-- TAB 1: OVERVIEW -->
+                <div class="tab-panel active" id="tab-overview">
+                    <div class="hero-age-card">
+                        <span class="hero-age-label">You Have Been Alive For</span>
+                        <div class="age-inline">
+                            <div class="age-chip">
+                                <span class="result-value" id="years">0</span>
+                                <span class="inline-label">Years</span>
+                            </div>
+                            <div class="age-chip">
+                                <span class="result-value" id="months">0</span>
+                                <span class="inline-label">Months</span>
+                            </div>
+                            <div class="age-chip">
+                                <span class="result-value" id="days">0</span>
+                                <span class="inline-label">Days</span>
                             </div>
                         </div>
-                        <div class="planetary-card">
-                            <div class="planetary-icon">🌙</div>
-                            <div class="planetary-details">
-                                <div class="planetary-name">Moon Sign</div>
-                                <div class="planetary-value" id="moon-sign">—</div>
+
+                        <!-- Precision Real-Time Millisecond Ticker -->
+                        <div class="ticker-box">
+                            <span class="ticker-label"><i class="fa-solid fa-stopwatch"></i> Real-Time Exact Age:</span>
+                            <div class="ticker-value" id="live-ms-ticker">0 Years, 0d 0h 0m 0s 0ms</div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2-col">
+                        <!-- Life Progress Ring / Bar -->
+                        <div class="panel-card">
+                            <h3 class="panel-title"><i class="fa-solid fa-battery-half"></i> Life Expectancy Progress</h3>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="life-progress" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-meta">
+                                    <span id="progress-text">0% of average life expectancy (75 yrs)</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="planetary-card">
-                            <div class="planetary-icon">⭐</div>
-                            <div class="planetary-details">
-                                <div class="planetary-name">Rising Sign</div>
-                                <div class="planetary-value" id="rising-sign">—</div>
+
+                        <!-- Day of Week Born Insights -->
+                        <div class="panel-card born-day-card">
+                            <h3 class="panel-title"><i class="fa-solid fa-calendar-day"></i> Birth Day Trivia</h3>
+                            <div class="born-day-content">
+                                <div class="born-day-badge" id="born-day-name">Tuesday</div>
+                                <p class="born-day-desc" id="born-day-desc">You were born on a Tuesday! Ruled by Mars, Tuesday births are known for passion, courage, and enthusiasm.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Life Predictions -->
-                    <div class="predictions-container">
-                        <!-- Love Life Predictions -->
-                        <div class="prediction-card love-prediction">
-                            <div class="prediction-header">
-                                <span class="prediction-icon">💕</span>
-                                <h5 class="prediction-title">Love Life Analysis</h5>
+                    <!-- Next Birthday Countdown Grid -->
+                    <div class="panel-card">
+                        <h3 class="panel-title"><i class="fa-solid fa-cake-candles"></i> Next Birthday Countdown</h3>
+                        <div class="countdown-grid">
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-days">0</span>
+                                <span class="countdown-label">Days</span>
                             </div>
-                            <div class="prediction-content" id="love-prediction">
-                                <!-- Love predictions will be populated by JavaScript -->
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-hours">0</span>
+                                <span class="countdown-label">Hours</span>
                             </div>
-                            <div class="prediction-remedy" id="love-remedy">
-                                <!-- Love remedies will be populated by JavaScript -->
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-minutes">0</span>
+                                <span class="countdown-label">Minutes</span>
                             </div>
-                        </div>
-
-                        <!-- Study/Career Predictions -->
-                        <div class="prediction-card study-prediction">
-                            <div class="prediction-header">
-                                <span class="prediction-icon">📚</span>
-                                <h5 class="prediction-title">Study & Career Insights</h5>
-                            </div>
-                            <div class="prediction-content" id="study-prediction">
-                                <!-- Study predictions will be populated by JavaScript -->
-                            </div>
-                            <div class="prediction-remedy" id="study-remedy">
-                                <!-- Study remedies will be populated by JavaScript -->
+                            <div class="countdown-item">
+                                <span class="countdown-number" id="countdown-seconds">0</span>
+                                <span class="countdown-label">Seconds</span>
                             </div>
                         </div>
+                        <div class="next-birthday-info">
+                            <span>Next Birthday Date: <strong id="next-birthday-date">—</strong> (<span id="next-birthday-weekday">—</span>)</span>
+                        </div>
+                    </div>
 
-                        <!-- Life Challenges -->
-                        <div class="prediction-card challenge-prediction">
-                            <div class="prediction-header">
-                                <span class="prediction-icon">🎯</span>
-                                <h5 class="prediction-title">Life Challenges & Solutions</h5>
+                    <!-- Total Time Lived Matrix -->
+                    <div class="panel-card">
+                        <h3 class="panel-title"><i class="fa-solid fa-clock"></i> Total Lived Matrix</h3>
+                        <div class="totals-grid">
+                            <div class="total-item">
+                                <div class="total-value" id="hoursTotal">0</div>
+                                <div class="total-label">Total Hours</div>
                             </div>
-                            <div class="prediction-content" id="challenge-prediction">
-                                <!-- Challenge predictions will be populated by JavaScript -->
+                            <div class="total-item">
+                                <div class="total-value" id="minutesTotal">0</div>
+                                <div class="total-label">Total Minutes</div>
                             </div>
-                            <div class="prediction-remedy" id="challenge-remedy">
-                                <!-- Challenge remedies will be populated by JavaScript -->
+                            <div class="total-item">
+                                <div class="total-value" id="secondsTotal">0</div>
+                                <div class="total-label">Total Seconds</div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Lucky Elements -->
-                        <div class="prediction-card lucky-prediction">
-                            <div class="prediction-header">
-                                <span class="prediction-icon">🍀</span>
-                                <h5 class="prediction-title">Your Lucky Elements</h5>
+                <!-- TAB 2: PLANETARY / COSMIC AGE -->
+                <div class="tab-panel" id="tab-planetary">
+                    <div class="panel-header">
+                        <h2>🪐 Your Age Across the Solar System</h2>
+                        <p>Time passes differently on other celestial bodies due to their orbital speeds and distances from the Sun.</p>
+                    </div>
+                    <div class="planetary-grid" id="planetary-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- TAB 3: ASTROLOGY -->
+                <div class="tab-panel" id="tab-astrology">
+                    <div class="panel-header">
+                        <h2>🔮 Astrology & Life Predictions</h2>
+                        <p>Explore your Zodiac Sun Sign, Moon Sign, Rising Sign, and tailored life guidance.</p>
+                    </div>
+
+                    <!-- Optional Birth Details Drawer -->
+                    <details class="accordion-drawer">
+                        <summary class="drawer-header"><i class="fa-solid fa-clock"></i> Optional: Enter Birth Time & Location for High Accuracy</summary>
+                        <div class="drawer-body">
+                            <div class="birth-time-inputs">
+                                <div class="time-input-group">
+                                    <label for="birth-hour">Hour (0-23)</label>
+                                    <input type="number" id="birth-hour" class="time-input" min="0" max="23" placeholder="14">
+                                </div>
+                                <div class="time-input-group">
+                                    <label for="birth-minute">Minute (0-59)</label>
+                                    <input type="number" id="birth-minute" class="time-input" min="0" max="59" placeholder="30">
+                                </div>
+                                <div class="time-input-group">
+                                    <label for="birth-place">Birth City</label>
+                                    <input type="text" id="birth-place" class="place-input" placeholder="e.g., New Delhi">
+                                </div>
                             </div>
-                            <div class="lucky-elements" id="lucky-elements">
-                                <!-- Lucky elements will be populated by JavaScript -->
+                            <button id="generate-predictions-btn" class="secondary-btn margin-top-sm">Update Astrology Analysis</button>
+                        </div>
+                    </details>
+
+                    <!-- Zodiac & Planetary Badges -->
+                    <div class="zodiac-cards-row">
+                        <div class="zodiac-hero-card">
+                            <div class="zodiac-large-icon" id="zodiac-icon">♈</div>
+                            <div class="zodiac-meta">
+                                <span class="zodiac-badge-title">Sun Sign</span>
+                                <h3 id="zodiac-name">Aries</h3>
+                                <span id="zodiac-dates">Mar 21 - Apr 19</span>
                             </div>
+                        </div>
+                        <div class="planetary-mini-cards">
+                            <div class="mini-card">
+                                <span class="mini-icon">🌙</span>
+                                <div>
+                                    <span class="mini-label">Moon Sign</span>
+                                    <strong id="moon-sign" class="mini-val">Pisces</strong>
+                                </div>
+                            </div>
+                            <div class="mini-card">
+                                <span class="mini-icon">⭐</span>
+                                <div>
+                                    <span class="mini-label">Rising Sign</span>
+                                    <strong id="rising-sign" class="mini-val">Leo</strong>
+                                </div>
+                            </div>
+                            <div class="mini-card">
+                                <span class="mini-icon">🌱</span>
+                                <div>
+                                    <span class="mini-label">Current Season</span>
+                                    <strong id="season-name" class="mini-val">Spring</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictions Cards Grid -->
+                    <div class="predictions-grid">
+                        <div class="prediction-card love-card">
+                            <div class="card-header">
+                                <span class="card-icon">💕</span>
+                                <h4>Love & Relationship Guidance</h4>
+                            </div>
+                            <div class="prediction-content" id="love-prediction">--</div>
+                            <div class="remedy-box" id="love-remedy">--</div>
+                        </div>
+
+                        <div class="prediction-card study-card">
+                            <div class="card-header">
+                                <span class="card-icon">📚</span>
+                                <h4>Career & Knowledge Insights</h4>
+                            </div>
+                            <div class="prediction-content" id="study-prediction">--</div>
+                            <div class="remedy-box" id="study-remedy">--</div>
+                        </div>
+
+                        <div class="prediction-card challenge-card">
+                            <div class="card-header">
+                                <span class="card-icon">🎯</span>
+                                <h4>Life Challenges & Remedies</h4>
+                            </div>
+                            <div class="prediction-content" id="challenge-prediction">--</div>
+                            <div class="remedy-box" id="challenge-remedy">--</div>
+                        </div>
+
+                        <div class="prediction-card lucky-card">
+                            <div class="card-header">
+                                <span class="card-icon">🍀</span>
+                                <h4>Lucky Elements</h4>
+                            </div>
+                            <div class="lucky-elements-grid" id="lucky-elements">--</div>
                         </div>
                     </div>
 
                     <!-- Daily Horoscope -->
-                    <div class="daily-horoscope">
-                        <h4 class="subsection-title">📅 Today's Horoscope</h4>
-                        <div class="horoscope-content" id="daily-horoscope">
-                            <!-- Daily horoscope will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Life Line & Love Life Line Section -->
-            <div class="life-love-section">
-                <h3 class="section-title">✨ Life Line & Love Life Line</h3>
-                
-                <!-- Life Line -->
-                <div class="life-line-container">
-                    <h4 class="subsection-title">💫 Your Life Line</h4>
-                    <div class="life-line-progress">
-                        <div class="life-line-bar">
-                            <div class="life-line-fill" id="life-line-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="life-line-stats">
-                            <div class="life-stat">
-                                <span class="stat-value" id="life-expectancy">75</span>
-                                <span class="stat-label">Expected Years</span>
-                            </div>
-                            <div class="life-stat">
-                                <span class="stat-value" id="life-completed">0</span>
-                                <span class="stat-label">Years Completed</span>
-                            </div>
-                            <div class="life-stat">
-                                <span class="stat-value" id="life-remaining">75</span>
-                                <span class="stat-label">Years Remaining</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="life-insights" id="life-insights">
-                        <!-- Life insights will be populated by JavaScript -->
+                    <div class="panel-card margin-top-md">
+                        <h3 class="panel-title"><i class="fa-solid fa-sun"></i> Today's Cosmic Horoscope</h3>
+                        <div class="horoscope-box" id="daily-horoscope">--</div>
                     </div>
                 </div>
 
-                <!-- Love Life Line -->
-                <div class="love-life-container">
-                    <h4 class="subsection-title">💕 Your Love Life Line</h4>
-                    <div class="love-life-inputs">
-                        <div class="love-input-group">
-                            <label for="relationship-status">Relationship Status</label>
-                            <select id="relationship-status" class="love-select">
-                                <option value="single">Single</option>
-                                <option value="dating">Dating</option>
-                                <option value="engaged">Engaged</option>
-                                <option value="married">Married</option>
-                                <option value="complicated">It's Complicated</option>
-                            </select>
+                <!-- TAB 4: HEALTH & VITALS -->
+                <div class="tab-panel" id="tab-health">
+                    <div class="panel-header">
+                        <h2>⚕️ Health, Vitals & Body Statistics</h2>
+                        <p>Calculate your Body Mass Index (BMI), height/weight percentiles, and estimate your lifetime bodily vitals.</p>
+                    </div>
+
+                    <!-- Vital Body Stats Counter Grid -->
+                    <div class="vitals-matrix">
+                        <div class="vital-card">
+                            <span class="vital-icon">❤️</span>
+                            <div class="vital-val" id="age-heartbeats">0</div>
+                            <span class="vital-lbl">Total Heartbeats</span>
                         </div>
-                        <div class="love-input-group">
-                            <label for="relationship-duration">Current Relationship Duration (Years)</label>
-                            <input type="number" id="relationship-duration" class="love-input" min="0" max="50" value="0">
+                        <div class="vital-card">
+                            <span class="vital-icon">👁️</span>
+                            <div class="vital-val" id="age-blinks">0</div>
+                            <span class="vital-lbl">Total Eye Blinks</span>
                         </div>
-                        <div class="love-input-group">
-                            <label for="total-relationships">Total Relationships in Life</label>
-                            <input type="number" id="total-relationships" class="love-input" min="0" max="20" value="0">
+                        <div class="vital-card">
+                            <span class="vital-icon">🫁</span>
+                            <div class="vital-val" id="age-breaths">0</div>
+                            <span class="vital-lbl">Total Breaths</span>
+                        </div>
+                        <div class="vital-card">
+                            <span class="vital-icon">😴</span>
+                            <div class="vital-val" id="age-sleep-yrs">0 Yrs</div>
+                            <span class="vital-lbl">Time Spent Sleeping</span>
                         </div>
                     </div>
-                    <div class="love-life-progress">
-                        <div class="love-life-bar">
-                            <div class="love-life-fill" id="love-life-fill" style="width: 0%"></div>
+
+                    <!-- Height & Weight Calculator -->
+                    <div class="panel-card margin-top-md">
+                        <h3 class="panel-title"><i class="fa-solid fa-weight-scale"></i> Body Mass Index (BMI) & Height/Weight Analysis</h3>
+                        <div class="hw-input-container">
+                            <div class="hw-input-group">
+                                <label for="gender-select">Gender</label>
+                                <select id="gender-select" class="hw-select">
+                                    <option value="">Select Gender</option>
+                                    <option value="male" selected>Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                            <div class="hw-input-group">
+                                <label for="height-input">Height</label>
+                                <div class="height-input-wrapper">
+                                    <input type="number" id="height-input" class="hw-input" placeholder="e.g. 175" min="50" max="250" value="175">
+                                    <select id="height-unit" class="hw-unit-select">
+                                        <option value="cm">cm</option>
+                                        <option value="ft">ft</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="hw-input-group">
+                                <label for="weight-input">Weight</label>
+                                <div class="weight-input-wrapper">
+                                    <input type="number" id="weight-input" class="hw-input" placeholder="e.g. 70" min="20" max="250" value="70">
+                                    <select id="weight-unit" class="hw-unit-select">
+                                        <option value="kg">kg</option>
+                                        <option value="lbs">lbs</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="calculate-hw-btn" class="secondary-btn">Calculate Health Status</button>
                         </div>
+
+                        <div class="hw-results hidden" id="hw-results">
+                            <div class="hw-results-grid">
+                                <div class="hw-result-item">
+                                    <div class="hw-result-value" id="bmi-value">—</div>
+                                    <div class="hw-result-label">BMI Score</div>
+                                    <div class="hw-result-status" id="bmi-status">—</div>
+                                </div>
+                                <div class="hw-result-item">
+                                    <div class="hw-result-value" id="height-percentile">—</div>
+                                    <div class="hw-result-label">Height Percentile</div>
+                                    <div class="hw-result-status" id="height-status">—</div>
+                                </div>
+                                <div class="hw-result-item">
+                                    <div class="hw-result-value" id="weight-percentile">—</div>
+                                    <div class="hw-result-label">Weight Percentile</div>
+                                    <div class="hw-result-status" id="weight-status">—</div>
+                                </div>
+                            </div>
+                            <div class="hw-recommendations" id="hw-recommendations"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: TIMELINE & LIFE/LOVE -->
+                <div class="tab-panel" id="tab-timeline">
+                    <div class="panel-header">
+                        <h2>💕 Life & Love Timeline</h2>
+                        <p>Analyze your life trajectory, relationship stats, milestones, and achievements.</p>
+                    </div>
+
+                    <!-- Life Line & Love Life Line Input Controls -->
+                    <div class="panel-card">
+                        <h3 class="panel-title"><i class="fa-solid fa-heart"></i> Love Life Line Customizer</h3>
+                        <div class="love-life-inputs">
+                            <div class="love-input-group">
+                                <label for="relationship-status">Relationship Status</label>
+                                <select id="relationship-status" class="love-select">
+                                    <option value="single">Single & Free</option>
+                                    <option value="dating">Dating</option>
+                                    <option value="engaged">Engaged</option>
+                                    <option value="married">Married</option>
+                                    <option value="complicated">It's Complicated</option>
+                                </select>
+                            </div>
+                            <div class="love-input-group">
+                                <label for="relationship-duration">Current Status Duration (Years)</label>
+                                <input type="number" id="relationship-duration" class="love-input" min="0" max="80" value="2">
+                            </div>
+                            <div class="love-input-group">
+                                <label for="total-relationships">Total Relationships in Life</label>
+                                <input type="number" id="total-relationships" class="love-input" min="0" max="30" value="1">
+                            </div>
+                        </div>
+
+                        <!-- Stats Display -->
                         <div class="love-life-stats">
                             <div class="love-stat">
                                 <span class="stat-value" id="love-age">0</span>
-                                <span class="stat-label">Love Age</span>
+                                <span class="stat-label">In-Love Years</span>
                             </div>
                             <div class="love-stat">
                                 <span class="stat-value" id="single-time">0</span>
-                                <span class="stat-label">Single Time</span>
+                                <span class="stat-label">Single Years</span>
                             </div>
                             <div class="love-stat">
                                 <span class="stat-value" id="love-percentage">0%</span>
-                                <span class="stat-label">Love % of Life</span>
+                                <span class="stat-label">% of Lifetime</span>
+                            </div>
+                        </div>
+
+                        <div class="love-insights" id="love-insights">--</div>
+                    </div>
+
+                    <!-- Life Milestones -->
+                    <div class="panel-card margin-top-md">
+                        <h3 class="panel-title"><i class="fa-solid fa-flag"></i> Upcoming Life Milestones</h3>
+                        <div class="milestones-grid" id="milestones-list"></div>
+                    </div>
+
+                    <!-- Achievements Badges -->
+                    <div class="panel-card margin-top-md">
+                        <h3 class="panel-title"><i class="fa-solid fa-trophy"></i> Life Achievement Badges</h3>
+                        <div class="achievements-grid" id="achievements-list"></div>
+                    </div>
+
+                    <!-- Life Timeline -->
+                    <div class="panel-card margin-top-md">
+                        <h3 class="panel-title"><i class="fa-solid fa-route"></i> Life Timeline</h3>
+                        <div class="timeline" id="life-timeline"></div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: STORY CARD GENERATOR -->
+                <div class="tab-panel" id="tab-storycard">
+                    <div class="panel-header">
+                        <h2>📸 Social Story Card Generator</h2>
+                        <p>Generate a stunning aesthetic image card ready to download and share on Instagram Stories, WhatsApp Status, or Twitter!</p>
+                    </div>
+
+                    <div class="story-card-layout">
+                        <!-- Interactive Canvas / Poster Card Preview -->
+                        <div class="poster-preview-container">
+                            <div class="story-poster" id="story-poster">
+                                <div class="poster-badge">AGE & COSMIC SNAPSHOT</div>
+                                <div class="poster-years" id="poster-years">0</div>
+                                <div class="poster-years-label">YEARS YOUNG</div>
+                                <div class="poster-details">
+                                    <div class="poster-detail-item">
+                                        <span class="p-icon" id="poster-zodiac-icon">♈</span>
+                                        <span class="p-text" id="poster-zodiac-name">Aries</span>
+                                    </div>
+                                    <div class="poster-detail-item">
+                                        <span class="p-icon">⏳</span>
+                                        <span class="p-text" id="poster-days-lived">0 Days Lived</span>
+                                    </div>
+                                </div>
+                                <div class="poster-footer">
+                                    <span>Created with ✨ Precision Age Calculator</span>
+                                    <span class="poster-by">dipukraj.tech</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Controls -->
+                        <div class="poster-actions-panel">
+                            <h3>Share & Export Options</h3>
+                            <p>Copy formatted text snippets for your favorite social networks or trigger native share:</p>
+                            <div class="share-buttons-stack">
+                                <button class="action-btn share-primary" id="share-btn">
+                                    <i class="fa-solid fa-share-nodes"></i> Share Age Summary
+                                </button>
+                                <button class="action-btn share-copy" id="copy-btn">
+                                    <i class="fa-solid fa-copy"></i> Copy Full Summary Text
+                                </button>
+                                <button class="action-btn share-insta" id="copy-instagram-btn">
+                                    <i class="fa-brands fa-instagram"></i> Copy Instagram Story Caption
+                                </button>
+                                <button class="action-btn share-twitter" id="copy-twitter-btn">
+                                    <i class="fa-brands fa-x-twitter"></i> Copy X (Twitter) Tweet
+                                </button>
+                                <button class="action-btn share-wa" id="copy-whatsapp-btn">
+                                    <i class="fa-brands fa-whatsapp"></i> Copy WhatsApp Status Text
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="love-insights" id="love-insights">
-                        <!-- Love insights will be populated by JavaScript -->
-                    </div>
                 </div>
 
-                <!-- Life vs Love Comparison -->
-                <div class="life-love-comparison">
-                    <h4 class="subsection-title">⚖️ Life vs Love Comparison</h4>
-                    <div class="comparison-chart">
-                        <div class="comparison-item">
-                            <div class="comparison-label">Life Progress</div>
-                            <div class="comparison-bar">
-                                <div class="comparison-fill life-fill" id="life-comparison-fill"></div>
-                            </div>
-                        </div>
-                        <div class="comparison-item">
-                            <div class="comparison-label">Love Progress</div>
-                            <div class="comparison-bar">
-                                <div class="comparison-fill love-fill" id="love-comparison-fill"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="comparison-insight" id="comparison-insight">
-                        <!-- Comparison insight will be populated by JavaScript -->
-                    </div>
-                </div>
             </div>
+        </main>
 
-            <h3 class="section-title">Total Time Lived</h3>
-            <div class="result-box totals-box">
-                <div class="result-item">
-                    <div class="result-value" id="hoursTotal">0</div>
-                    <div class="result-label">Hours</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="minutesTotal">0</div>
-                    <div class="result-label">Minutes</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="secondsTotal">0</div>
-                    <div class="result-label">Seconds</div>
-                </div>
-            </div>
-
-            <h3 class="section-title">Next Birthday</h3>
-            <div class="next-birthday-section">
-            <div class="result-box">
-                <div class="result-item">
-                    <div class="result-value" id="next-birthday-date">—</div>
-                    <div class="result-label">Date</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="next-birthday-weekday">—</div>
-                    <div class="result-label">Weekday</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="days-until">—</div>
-                    <div class="result-label">Days Left</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Height & Weight Calculator Section -->
-            <div class="height-weight-section">
-                <h3 class="section-title">📏 Height & Weight Calculator</h3>
-                <div class="hw-input-container">
-                    <div class="hw-input-group">
-                        <label for="gender-select">Gender</label>
-                        <select id="gender-select" class="hw-select">
-                            <option value="">Select Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </div>
-                    <div class="hw-input-group">
-                        <label for="height-input">Height</label>
-                        <div class="height-input-wrapper">
-                            <input type="number" id="height-input" class="hw-input" placeholder="Enter height" min="50" max="250">
-                            <select id="height-unit" class="hw-unit-select">
-                                <option value="cm">cm</option>
-                                <option value="ft">ft</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="hw-input-group">
-                        <label for="weight-input">Weight</label>
-                        <div class="weight-input-wrapper">
-                            <input type="number" id="weight-input" class="hw-input" placeholder="Enter weight" min="20" max="200">
-                            <select id="weight-unit" class="hw-unit-select">
-                                <option value="kg">kg</option>
-                                <option value="lbs">lbs</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button id="calculate-hw-btn" class="hw-calculate-btn">Calculate Health Status</button>
-                </div>
-                
-                <div class="hw-results hidden" id="hw-results">
-                    <h4 class="hw-results-title">Your Health Analysis</h4>
-                    <div class="hw-results-grid">
-                        <div class="hw-result-item">
-                            <div class="hw-result-value" id="bmi-value">—</div>
-                            <div class="hw-result-label">BMI</div>
-                            <div class="hw-result-status" id="bmi-status">—</div>
-                        </div>
-                        <div class="hw-result-item">
-                            <div class="hw-result-value" id="height-percentile">—</div>
-                            <div class="hw-result-label">Height Percentile</div>
-                            <div class="hw-result-status" id="height-status">—</div>
-                        </div>
-                        <div class="hw-result-item">
-                            <div class="hw-result-value" id="weight-percentile">—</div>
-                            <div class="hw-result-label">Weight Percentile</div>
-                            <div class="hw-result-status" id="weight-status">—</div>
-                        </div>
-                    </div>
-                    <div class="hw-recommendations" id="hw-recommendations">
-                        <!-- Recommendations will be populated by JavaScript -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Visual Enhancements Section -->
-            <div class="visual-enhancements-section">
-                <h3 class="section-title">🎨 Visual Age Representation</h3>
-                
-                <!-- Age in Different Units -->
-                <div class="age-units-section">
-                    <h4 class="subsection-title">Your Age in Different Units</h4>
-                    <div class="age-units-grid">
-                        <div class="age-unit-item">
-                            <span class="unit-value" id="age-minutes">0</span>
-                            <span class="unit-label">Minutes</span>
-                        </div>
-                        <div class="age-unit-item">
-                            <span class="unit-value" id="age-seconds">0</span>
-                            <span class="unit-label">Seconds</span>
-                        </div>
-                        <div class="age-unit-item">
-                            <span class="unit-value" id="age-heartbeats">0</span>
-                            <span class="unit-label">Heartbeats</span>
-                        </div>
-                        <div class="age-unit-item">
-                            <span class="unit-value" id="age-blinks">0</span>
-                            <span class="unit-label">Blinks</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Seasonal Theme -->
-                <div class="seasonal-theme-section">
-                    <h4 class="subsection-title">🌱 Seasonal Theme</h4>
-                    <div class="seasonal-info">
-                        <div class="season-icon" id="season-icon">🌸</div>
-                        <div class="season-name" id="season-name">Spring</div>
-                        <div class="season-dates" id="season-dates">Mar 20 - Jun 20</div>
-                    </div>
-                </div>
-
-                <!-- Custom Theme Selector -->
-                <div class="theme-selector-section">
-                    <h4 class="subsection-title">🎨 Choose Your Theme</h4>
-                    <div class="theme-options">
-                        <button class="theme-option" data-theme="default">Default</button>
-                        <button class="theme-option" data-theme="ocean">Ocean</button>
-                        <button class="theme-option" data-theme="sunset">Sunset</button>
-                        <button class="theme-option" data-theme="forest">Forest</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Social Features Section -->
-            <div class="social-features-section">
-                <h3 class="section-title">🚀 Social Features</h3>
-                
-                <!-- Age Challenges -->
-                <div class="age-challenges-section">
-                    <h4 class="subsection-title">🎯 Age Challenges</h4>
-                    <div class="challenges-grid">
-                        <div class="challenge-item">
-                            <span class="challenge-icon">⏰</span>
-                            <span class="challenge-text">Share your age in seconds</span>
-                            <button class="challenge-btn" id="share-seconds-btn">Share</button>
-                        </div>
-                        <div class="challenge-item">
-                            <span class="challenge-icon">🎂</span>
-                            <span class="challenge-text">Birthday countdown challenge</span>
-                            <button class="challenge-btn" id="share-countdown-btn">Share</button>
-                        </div>
-                        <div class="challenge-item">
-                            <span class="challenge-icon">🏆</span>
-                            <span class="challenge-text">Age milestone celebration</span>
-                            <button class="challenge-btn" id="share-milestone-btn">Share</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Social Media Ready Content -->
-                <div class="social-content-section">
-                    <h4 class="subsection-title">📱 Social Media Ready</h4>
-                    <div class="social-content-grid">
-                        <div class="content-item">
-                            <h5>Instagram Story</h5>
-                            <div class="content-preview" id="instagram-preview">
-                                <div class="preview-text">"I'm exactly X years, Y months, Z days old! 🎉"</div>
-                            </div>
-                            <button class="content-btn" id="copy-instagram-btn">Copy Text</button>
-                        </div>
-                        <div class="content-item">
-                            <h5>Twitter Post</h5>
-                            <div class="content-preview" id="twitter-preview">
-                                <div class="preview-text">"Age: X years | Next birthday in Y days | Life progress: Z% 🚀"</div>
-                            </div>
-                            <button class="content-btn" id="copy-twitter-btn">Copy Text</button>
-                        </div>
-                        <div class="content-item">
-                            <h5>WhatsApp Status</h5>
-                            <div class="content-preview" id="whatsapp-preview">
-                                <div class="preview-text">"🎂 My age journey: X years, Y months, Z days! #AgeCalculator"</div>
-                            </div>
-                            <button class="content-btn" id="copy-whatsapp-btn">Copy Text</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Achievement Sharing -->
-                <div class="achievement-sharing-section">
-                    <h4 class="subsection-title">🏅 Share Your Achievements</h4>
-                    <div class="achievement-share-grid">
-                        <div class="achievement-share-item">
-                            <span class="achievement-icon">⭐</span>
-                            <span class="achievement-text">First Time User</span>
-                            <button class="share-achievement-btn" id="share-first-user-btn">Share</button>
-                        </div>
-                        <div class="achievement-share-item">
-                            <span class="achievement-icon">🎯</span>
-                            <span class="achievement-text">Milestone Reached</span>
-                            <button class="share-achievement-btn" id="share-milestone-achievement-btn">Share</button>
-                        </div>
-                        <div class="achievement-share-item">
-                            <span class="achievement-icon">🌟</span>
-                            <span class="achievement-text">Zodiac Discovery</span>
-                            <button class="share-achievement-btn" id="share-zodiac-btn">Share</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button id="copy-btn" class="btn-secondary" type="button">Copy Result</button>
-                <button id="share-btn" class="btn-secondary" type="button">Share</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer with Creator Info -->
-    <div class="footer">
-        <div class="footer-content">
-            <p>© 2025 P.A.C  | All Rights Reserved.</p>
-            <p>✨Designed & Developed With ❤️ By <a href="https://www.instagram.com/r.p.dipu" class="footer-link" id="footer-creator-link">Dipu K Raj</a></p>
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>© 2026 Precision Age Calculator | All Rights Reserved.</p>
+            <p>Designed & Developed with ❤️ by <a href="https://www.instagram.com/r.p.dipu" target="_blank" class="footer-link">Dipu K Raj</a></p>
             <div class="social-links">
-                <a href="https://www.facebook.com/dipu.kraj.92" class="social-link" title="Facebook">
-                    <i class="fa-brands fa-facebook-f social-icon"></i>
-                </a>
-                <a href="https://www.instagram.com/r.p.dipu" class="social-link" title="Instagram">
-                    <i class="fa-brands fa-instagram social-icon"></i>
-                </a>
-                <a href="https://youtube.com/@explorewithdipu" class="social-link" title="YouTube">
-                    <i class="fa-brands fa-youtube social-icon"></i>
-                </a>
-                <a href="https://www.linkedin.com/in/dipukraj/" class="social-link" title="LinkedIn">
-                    <i class="fa-brands fa-linkedin-in social-icon"></i>
-                </a>
-                <a href="https://wa.me/7295808100" class="social-link" title="WhatsApp">
-                    <i class="fa-brands fa-whatsapp social-icon"></i>
-                </a>
-                <a href="https://dipukraj.tech" class="social-link" title="Website">
-                    <i class="fa-solid fa-globe social-icon"></i>
-                </a>
-                <a href="https://github.com/dipukraj" class="social-link" title="GitHub">
-                    <i class="fa-brands fa-github social-icon"></i>
-                </a>
+                <a href="https://www.facebook.com/dipu.kraj.92" target="_blank" class="social-link" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://www.instagram.com/r.p.dipu" target="_blank" class="social-link" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://youtube.com/@explorewithdipu" target="_blank" class="social-link" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                <a href="https://www.linkedin.com/in/dipukraj/" target="_blank" class="social-link" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="https://wa.me/7295808100" target="_blank" class="social-link" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="https://dipukraj.tech" target="_blank" class="social-link" title="Website"><i class="fa-solid fa-globe"></i></a>
+                <a href="https://github.com/dipukraj" target="_blank" class="social-link" title="GitHub"><i class="fa-brands fa-github"></i></a>
             </div>
-        </div>
+        </footer>
     </div>
 
     <!-- Confetti Container -->
@@ -592,5 +563,5 @@
 
     <script src="script.js"></script>
 </body>
-</html>
 
+</html>

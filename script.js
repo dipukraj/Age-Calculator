@@ -1,86 +1,91 @@
-// --- Utilities ---
+// --- Helper Utilities ---
 const $ = (id) => document.getElementById(id);
+
+// Core DOM References
 const dobInputEl = $('dob');
 const errorMessageEl = $('error-message');
 const resultContainerEl = $('result-container');
 const themeToggleBtn = $('theme-toggle');
 const dobPlaceholderEl = $('dob-placeholder');
 const dobPickerBtnEl = $('dob-picker-btn');
+const calculateBtn = $('calculate-btn');
 
-// Creator Information - Customize these!
-const CREATOR_INFO = {
-    name: "Dipu K Raj",
-    website: "https://www.instagram.com/r.p.dipu",
-    github: "https://github.com/dipukraj",
-    linkedin: "https://www.linkedin.com/in/dipukraj/",
-    portfolio: "https://dipukraj.me/"
-};
+// State Variables
+let liveTickerAnimationId = null;
+let currentDob = null;
 
 // Set max date to today
-dobInputEl.max = new Date().toISOString().split('T')[0];
+if (dobInputEl) {
+    dobInputEl.max = new Date().toISOString().split('T')[0];
+}
+
 function syncDobPlaceholder() {
+    if (!dobInputEl || !dobPlaceholderEl) return;
     const shouldShow = !dobInputEl.value && document.activeElement !== dobInputEl;
     dobPlaceholderEl.style.display = shouldShow ? 'block' : 'none';
 }
-syncDobPlaceholder();
 
-// Always start in light mode on load (ignore previous stored/system preference)
-(function initTheme() {
-    document.body.classList.remove('dark');
-    themeToggleBtn.textContent = 'Dark Mode';
-    // Ensure localStorage reflects current initial state
-    try { localStorage.setItem('theme', 'light'); } catch (_) {}
-})();
+// --- Theme Controller ---
+function initTheme() {
+    const savedTheme = localStorage.getItem('app-theme-style') || 'default';
+    const isDark = localStorage.getItem('theme-mode') === 'dark';
 
-// Initialize animated background (only on desktop for better mobile performance)
-if (window.innerWidth > 768) {
-    createAnimatedBackground();
+    if (isDark) {
+        document.body.classList.add('dark-theme');
+        if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i><span class="theme-text">Light Mode</span>';
+        }
+    } else {
+        document.body.classList.remove('dark-theme');
+        if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i><span class="theme-text">Dark Mode</span>';
+        }
+    }
+
+    applyCustomThemeStyle(savedTheme);
 }
 
-// Update creator information
-// function updateCreatorInfo() {
-//     $('creator-link').textContent = CREATOR_INFO.name;
-//     $('creator-link').href = CREATOR_INFO.website;
-//     $('footer-creator-link').textContent = CREATOR_INFO.name;
-//     $('footer-creator-link').href = CREATOR_INFO.website;
-//     
-//     // Update social links
-//     const socialLinks = document.querySelectorAll('.social-link');
-//     socialLinks[0].href = CREATOR_INFO.github; // GitHub
-//     socialLinks[1].href = CREATOR_INFO.linkedin; // LinkedIn
-//     socialLinks[2].href = CREATOR_INFO.portfolio; // Portfolio
-// }
+function applyCustomThemeStyle(theme) {
+    document.body.classList.remove('theme-ocean', 'theme-sunset', 'theme-forest');
+    if (theme !== 'default') {
+        document.body.classList.add(`theme-${theme}`);
+    }
+    localStorage.setItem('app-theme-style', theme);
 
-// updateCreatorInfo();
-
-themeToggleBtn.addEventListener('click', () => {
-    const isDark = document.body.classList.toggle('dark');
-    themeToggleBtn.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-});
-
-let tickerId = null;
-let inputDebounceId = null;
-
-function showResults() {
-    if (!resultContainerEl.classList.contains('hidden')) return;
-    resultContainerEl.classList.remove('hidden');
-    requestAnimationFrame(() => {
-        resultContainerEl.classList.add('is-visible');
+    // Update active state in theme buttons
+    document.querySelectorAll('.theme-option').forEach(btn => {
+        if (btn.dataset.theme === theme) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     });
 }
 
-function hideResults() {
-    if (resultContainerEl.classList.contains('hidden')) return;
-    resultContainerEl.classList.remove('is-visible');
-    const onEnd = () => {
-        resultContainerEl.classList.add('hidden');
-        resultContainerEl.removeEventListener('transitionend', onEnd);
-    };
-    resultContainerEl.addEventListener('transitionend', onEnd);
+// --- Tab System Controller ---
+function initTabs() {
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.dataset.tab;
+
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabPanels.forEach(p => p.classList.remove('active'));
+
+            btn.classList.add('active');
+            const targetPanel = $(targetTab);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+        });
+    });
 }
 
+// --- Number Animation Utility ---
 function animateNumber(el, toValue, duration = 400) {
+    if (!el) return;
     const startValue = Number(el.dataset.value || el.textContent.replace(/[,\s]/g, '') || 0);
     const endValue = Number(toValue);
     if (!isFinite(startValue) || !isFinite(endValue)) {
@@ -89,10 +94,10 @@ function animateNumber(el, toValue, duration = 400) {
         return;
     }
     if (startValue === endValue) return;
+
     const startTime = performance.now();
     function step(now) {
         const t = Math.min(1, (now - startTime) / duration);
-        // easeOutCubic
         const eased = 1 - Math.pow(1 - t, 3);
         const current = Math.round(startValue + (endValue - startValue) * eased);
         el.textContent = current.toLocaleString();
@@ -106,58 +111,27 @@ function animateNumber(el, toValue, duration = 400) {
     requestAnimationFrame(step);
 }
 
+// --- Date Validation ---
 function validateDob(dob) {
     const today = new Date();
     if (!dob) {
-        errorMessageEl.textContent = 'Please enter your date of birth.';
+        if (errorMessageEl) errorMessageEl.textContent = 'Please select your date of birth.';
         return false;
     }
     if (dob > today) {
-        errorMessageEl.textContent = 'Date cannot be in the future.';
+        if (errorMessageEl) errorMessageEl.textContent = 'Date cannot be in the future.';
         return false;
     }
     const oldest = new Date();
     oldest.setFullYear(oldest.getFullYear() - 130);
     if (dob < oldest) {
-        errorMessageEl.textContent = 'Please enter a realistic date (less than 130 years ago).';
+        if (errorMessageEl) errorMessageEl.textContent = 'Please enter a realistic date (less than 130 years ago).';
         return false;
     }
     return true;
 }
 
-function formatDateHuman(d) {
-    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-function weekdayName(d) {
-    return d.toLocaleDateString(undefined, { weekday: 'long' });
-}
-
-function computeNextBirthday(dob, now) {
-    const month = dob.getMonth();
-    const day = dob.getDate();
-    let year = now.getFullYear();
-
-    // Handle Feb 29 on non-leap years -> Feb 28
-    const isLeapDob = month === 1 && day === 29;
-    let candidate = new Date(year, month, isLeapDob ? 28 : day);
-    if (isLeapDob && (new Date(year, 1, 29).getDate() === 29)) {
-        candidate = new Date(year, 1, 29);
-    }
-    if (candidate < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
-        year += 1;
-        candidate = new Date(year, month, isLeapDob ? 28 : day);
-        if (isLeapDob && (new Date(year, 1, 29).getDate() === 29)) {
-            candidate = new Date(year, 1, 29);
-        }
-    }
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startOfCandidate = new Date(candidate.getFullYear(), candidate.getMonth(), candidate.getDate());
-    const daysLeft = Math.round((startOfCandidate - startOfToday) / msPerDay);
-    return { date: candidate, daysLeft };
-}
-
+// --- Calculations Core ---
 function calculateAgeParts(dob, now) {
     let years = now.getFullYear() - dob.getFullYear();
     let months = now.getMonth() - dob.getMonth();
@@ -181,107 +155,143 @@ function calculateTotals(dob, now) {
     const totalMinutes = Math.floor(ms / (1000 * 60));
     const totalHours = Math.floor(ms / (1000 * 60 * 60));
     const totalDays = Math.floor(ms / (1000 * 60 * 60 * 24));
-    return { totalSeconds, totalMinutes, totalHours, totalDays };
+    return { totalSeconds, totalMinutes, totalHours, totalDays, ms };
 }
 
-// Confetti Animation (optimized for mobile)
-function createConfetti() {
-    const container = $('confetti-container');
-    container.innerHTML = '';
-    
-    // Reduce confetti count on mobile for better performance
-    const isMobile = window.innerWidth <= 768;
-    const confettiCount = isMobile ? 20 : 50;
-    
-    for (let i = 0; i < confettiCount; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + '%';
-        confetti.style.animationDelay = Math.random() * 2 + 's';
-        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-        container.appendChild(confetti);
+function computeNextBirthday(dob, now) {
+    const month = dob.getMonth();
+    const day = dob.getDate();
+    let year = now.getFullYear();
+
+    const isLeapDob = month === 1 && day === 29;
+    let candidate = new Date(year, month, isLeapDob ? 28 : day);
+    if (isLeapDob && (new Date(year, 1, 29).getDate() === 29)) {
+        candidate = new Date(year, 1, 29);
     }
-    
-    // Shorter duration on mobile
-    const duration = isMobile ? 3000 : 5000;
-    setTimeout(() => {
-        container.innerHTML = '';
-    }, duration);
-}
-
-// Animated Background (optimized for mobile)
-function createAnimatedBackground() {
-    const bg = $('animated-bg');
-    bg.innerHTML = '';
-    
-    // Reduce particle count on mobile for better performance
-    const isMobile = window.innerWidth <= 768;
-    const particleCount = isMobile ? 10 : 20;
-    
-    for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'floating-particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 20 + 's';
-        bg.appendChild(particle);
+    if (candidate < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+        year += 1;
+        candidate = new Date(year, month, isLeapDob ? 28 : day);
+        if (isLeapDob && (new Date(year, 1, 29).getDate() === 29)) {
+            candidate = new Date(year, 1, 29);
+        }
     }
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfCandidate = new Date(candidate.getFullYear(), candidate.getMonth(), candidate.getDate());
+    const daysLeft = Math.round((startOfCandidate - startOfToday) / msPerDay);
+    return { date: candidate, daysLeft };
 }
 
-// Achievement Badges
-function calculateAchievements(age) {
-    const achievements = [
-        { id: 'first-year', name: 'First Year', icon: '👶', age: 1, description: 'Survived first year!' },
-        { id: 'toddler', name: 'Toddler', icon: '🚶', age: 3, description: 'Walking and talking' },
-        { id: 'school-age', name: 'School Age', icon: '🎒', age: 6, description: 'Ready for school' },
-        { id: 'preteen', name: 'Preteen', icon: '📱', age: 12, description: 'Digital native' },
-        { id: 'teenager', name: 'Teenager', icon: '🎵', age: 13, description: 'Teen years begin' },
-        { id: 'legal-adult', name: 'Legal Adult', icon: '🆔', age: 18, description: 'You can vote!' },
-        { id: 'drinking-age', name: 'Drinking Age', icon: '🍺', age: 21, description: 'Legal to drink' },
-        { id: 'quarter-century', name: 'Quarter Century', icon: '🎂', age: 25, description: '25 years young' },
-        { id: 'thirties', name: 'Thirties', icon: '💼', age: 30, description: 'Career focused' },
-        { id: 'forties', name: 'Forties', icon: '🏠', age: 40, description: 'Established' },
-        { id: 'half-century', name: 'Half Century', icon: '🎯', age: 50, description: '50 years of wisdom' },
-        { id: 'sixties', name: 'Sixties', icon: '🌅', age: 60, description: 'Golden years' },
-        { id: 'seventies', name: 'Seventies', icon: '👴', age: 70, description: 'Senior wisdom' },
-        { id: 'eighties', name: 'Eighties', icon: '🏆', age: 80, description: 'Eighty and thriving' },
-        { id: 'nineties', name: 'Nineties', icon: '💎', age: 90, description: 'Diamond age' },
-        { id: 'century', name: 'Century', icon: '👑', age: 100, description: 'Century mark!' }
+// --- Live Real-Time Precision Millisecond Ticker ---
+function startLiveMillisecondTicker(dob) {
+    if (liveTickerAnimationId) cancelAnimationFrame(liveTickerAnimationId);
+
+    const tickerEl = $('live-ms-ticker');
+    if (!tickerEl) return;
+
+    function update() {
+        const now = new Date();
+        const diffMs = now - dob;
+
+        const msPerSecond = 1000;
+        const msPerMinute = 60 * msPerSecond;
+        const msPerHour = 60 * msPerMinute;
+        const msPerDay = 24 * msPerHour;
+        const msPerYear = 365.25 * msPerDay;
+
+        const years = Math.floor(diffMs / msPerYear);
+        let rem = diffMs % msPerYear;
+
+        const days = Math.floor(rem / msPerDay);
+        rem %= msPerDay;
+
+        const hours = Math.floor(rem / msPerHour);
+        rem %= msPerHour;
+
+        const minutes = Math.floor(rem / msPerMinute);
+        rem %= msPerMinute;
+
+        const seconds = Math.floor(rem / msPerSecond);
+        const milliseconds = rem % msPerSecond;
+
+        tickerEl.textContent = `${years}y ${days}d ${hours}h ${minutes}m ${seconds}s ${milliseconds}ms`;
+
+        liveTickerAnimationId = requestAnimationFrame(update);
+    }
+
+    liveTickerAnimationId = requestAnimationFrame(update);
+}
+
+// --- Day of Birth Trivia ---
+function updateDayOfBirthTrivia(dob) {
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = daysOfWeek[dob.getDay()];
+
+    const triviaList = {
+        'Sunday': 'Ruled by the Sun. Sunday births are radiant, ambitious, bold, and natural leaders.',
+        'Monday': 'Ruled by the Moon. Monday births are gentle, intuitive, imaginative, and deeply compassionate.',
+        'Tuesday': 'Ruled by Mars. Tuesday births are passionate, courageous, energetic, and goal-driven.',
+        'Wednesday': 'Ruled by Mercury. Wednesday births are witty, communicative, versatile, and quick thinkers.',
+        'Thursday': 'Ruled by Jupiter. Thursday births are generous, optimistic, wise, and adventure seekers.',
+        'Friday': 'Ruled by Venus. Friday births are artistic, romantic, charming, and lovers of beauty.',
+        'Saturday': 'Ruled by Saturn. Saturday births are disciplined, resilient, wise, and grounded.'
+    };
+
+    if ($('born-day-name')) $('born-day-name').textContent = dayName;
+    if ($('born-day-desc')) $('born-day-desc').textContent = `You were born on a ${dayName}! ${triviaList[dayName]}`;
+}
+
+// --- Planetary / Cosmic Age ---
+function updatePlanetaryAge(totalDays) {
+    const planets = [
+        { name: 'Mercury', emoji: '☿️', ratio: 0.2408467, desc: '88 Earth Days / Orbit' },
+        { name: 'Venus', emoji: '♀️', ratio: 0.615197, desc: '225 Earth Days / Orbit' },
+        { name: 'Earth', emoji: '🌍', ratio: 1.0, desc: '365.25 Days / Orbit' },
+        { name: 'Moon (Lunar Cycles)', emoji: '🌙', ratio: 29.53 / 365.25, desc: 'Lunar Synodic Cycles' },
+        { name: 'Mars', emoji: '♂️', ratio: 1.8808158, desc: '687 Earth Days / Orbit' },
+        { name: 'Jupiter', emoji: '♃', ratio: 11.862615, desc: '11.9 Earth Years / Orbit' },
+        { name: 'Saturn', emoji: '♄', ratio: 29.4571, desc: '29.5 Earth Years / Orbit' },
+        { name: 'Uranus', emoji: '♅', ratio: 84.0205, desc: '84 Earth Years / Orbit' },
+        { name: 'Neptune', emoji: '♆', ratio: 164.79, desc: '165 Earth Years / Orbit' }
     ];
 
-    return achievements.map(achievement => ({
-        ...achievement,
-        unlocked: age >= achievement.age
-    }));
+    const earthYears = totalDays / 365.25;
+    const gridEl = $('planetary-grid');
+    if (!gridEl) return;
+
+    gridEl.innerHTML = planets.map(p => {
+        const planetAge = (earthYears / p.ratio).toFixed(2);
+        return `
+            <div class="planet-card">
+                <span class="planet-emoji">${p.emoji}</span>
+                <div class="planet-info">
+                    <span class="planet-name">${p.name}</span>
+                    <span class="planet-age">${planetAge} Yrs</span>
+                    <span class="planet-sub">${p.desc}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
-// Life Timeline
-function calculateLifeTimeline(dob, age) {
-    const timeline = [
-        { age: 0, event: 'Birth', date: dob, type: 'past' },
-        { age: 1, event: 'First Steps', date: new Date(dob.getFullYear() + 1, dob.getMonth(), dob.getDate()), type: 'past' },
-        { age: 3, event: 'Started Talking', date: new Date(dob.getFullYear() + 3, dob.getMonth(), dob.getDate()), type: 'past' },
-        { age: 6, event: 'Started School', date: new Date(dob.getFullYear() + 6, dob.getMonth(), dob.getDate()), type: 'past' },
-        { age: 12, event: 'Preteen Years', date: new Date(dob.getFullYear() + 12, dob.getMonth(), dob.getDate()), type: 'past' },
-        { age: 18, event: 'Legal Adult', date: new Date(dob.getFullYear() + 18, dob.getMonth(), dob.getDate()), type: 'past' },
-        { age: 21, event: 'Drinking Age', date: new Date(dob.getFullYear() + 21, dob.getMonth(), dob.getDate()), type: 'past' },
-        { age: 25, event: 'Quarter Century', date: new Date(dob.getFullYear() + 25, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 30, event: 'Thirties Begin', date: new Date(dob.getFullYear() + 30, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 40, event: 'Forties Begin', date: new Date(dob.getFullYear() + 40, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 50, event: 'Half Century', date: new Date(dob.getFullYear() + 50, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 60, event: 'Sixties Begin', date: new Date(dob.getFullYear() + 60, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 70, event: 'Seventies Begin', date: new Date(dob.getFullYear() + 70, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 80, event: 'Eighties Begin', date: new Date(dob.getFullYear() + 80, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 90, event: 'Nineties Begin', date: new Date(dob.getFullYear() + 90, dob.getMonth(), dob.getDate()), type: 'future' },
-        { age: 100, event: 'Century Mark', date: new Date(dob.getFullYear() + 100, dob.getMonth(), dob.getDate()), type: 'future' }
-    ];
+// --- Vitals Counter ---
+function updateVitals(totals) {
+    const minutes = totals.totalMinutes;
+    const seconds = totals.totalSeconds;
+    const days = totals.totalDays;
 
-    return timeline.map(item => ({
-        ...item,
-        type: age >= item.age ? 'past' : 'future'
-    }));
+    const heartbeats = Math.floor(minutes * 75); // Avg 75 bpm
+    const blinks = Math.floor(minutes * 15); // Avg 15 blinks/min
+    const breaths = Math.floor(minutes * 16); // Avg 16 breaths/min
+    const sleepYears = (days * (8 / 24) / 365.25).toFixed(1); // 8 hrs sleep per day
+
+    if ($('age-heartbeats')) $('age-heartbeats').textContent = heartbeats.toLocaleString();
+    if ($('age-blinks')) $('age-blinks').textContent = blinks.toLocaleString();
+    if ($('age-breaths')) $('age-breaths').textContent = breaths.toLocaleString();
+    if ($('age-sleep-yrs')) $('age-sleep-yrs').textContent = `${sleepYears} Yrs`;
 }
 
-// Zodiac Sign Calculator
+// --- Zodiac Sign Calculator ---
 function getZodiacSign(month, day) {
     const zodiacSigns = [
         { name: 'Capricorn', icon: '♑', startMonth: 12, startDay: 22, endMonth: 1, endDay: 19 },
@@ -304,1218 +314,372 @@ function getZodiacSign(month, day) {
                 return sign;
             }
         } else {
-            if ((month === sign.startMonth && day >= sign.startDay) || 
-                (month === sign.endMonth && day <= sign.endDay)) {
+            if ((month === sign.startMonth && day >= sign.startDay) || (month === sign.endMonth && day <= sign.endDay)) {
                 return sign;
             }
         }
     }
-    return zodiacSigns[0]; // Default to Capricorn
+    return zodiacSigns[0];
 }
 
-// Calculate Milestones
-function calculateMilestones(age) {
-    const milestones = [
-        { age: 18, name: 'Legal Adult' },
-        { age: 21, name: 'Drinking Age' },
-        { age: 25, name: 'Quarter Century' },
-        { age: 30, name: 'Thirties' },
-        { age: 40, name: 'Forties' },
-        { age: 50, name: 'Half Century' },
-        { age: 60, name: 'Sixties' },
-        { age: 70, name: 'Seventies' },
-        { age: 80, name: 'Eighties' },
-        { age: 90, name: 'Nineties' },
-        { age: 100, name: 'Century' }
+// --- Astrology Predictions Engine ---
+function updateAstrology(dob) {
+    const sunSign = getZodiacSign(dob.getMonth() + 1, dob.getDate());
+    const hour = parseInt($('birth-hour')?.value) || 12;
+    const minute = parseInt($('birth-minute')?.value) || 0;
+
+    const moonSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    const risingSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+    const dayOfYear = Math.floor((dob - new Date(dob.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+    const moonIndex = Math.floor((dayOfYear + hour / 24) / 2.5) % 12;
+    const risingIndex = Math.floor((dob.getMonth() * 2 + hour / 2) % 12);
+
+    const moonSign = moonSigns[moonIndex];
+    const risingSign = risingSigns[risingIndex];
+
+    if ($('zodiac-icon')) $('zodiac-icon').textContent = sunSign.icon;
+    if ($('zodiac-name')) $('zodiac-name').textContent = sunSign.name;
+    if ($('zodiac-dates')) $('zodiac-dates').textContent = `${sunSign.startMonth}/${sunSign.startDay} - ${sunSign.endMonth}/${sunSign.endDay}`;
+    if ($('moon-sign')) $('moon-sign').textContent = moonSign;
+    if ($('rising-sign')) $('rising-sign').textContent = risingSign;
+
+    // Season Detection
+    const month = dob.getMonth() + 1;
+    let season = "Spring";
+    if (month >= 6 && month <= 8) season = "Summer";
+    else if (month >= 9 && month <= 11) season = "Autumn";
+    else if (month === 12 || month <= 2) season = "Winter";
+    if ($('season-name')) $('season-name').textContent = season;
+
+    // Content Population
+    if ($('love-prediction')) $('love-prediction').textContent = `Your ${sunSign.name} energy radiates passion and loyalty. With ${moonSign} Moon, you thrive when emotional depth and trust are nurtured.`;
+    if ($('love-remedy')) $('love-remedy').textContent = `✨ Tip: Express feelings openly and practice listening. Wear pastel shades on Fridays.`;
+
+    if ($('study-prediction')) $('study-prediction').textContent = `Driven by your ${risingSign} Rising, you excel in problem-solving and leadership roles. Focus on structured study routines.`;
+    if ($('study-remedy')) $('study-remedy').textContent = `✨ Tip: Study in 45-minute sprint blocks with quick physical stretch breaks.`;
+
+    if ($('challenge-prediction')) $('challenge-prediction').textContent = `Your key life challenge is balancing high ambitions with patience. Avoid impulsive reactions under stress.`;
+    if ($('challenge-remedy')) $('challenge-remedy').textContent = `✨ Tip: Practice 5 minutes of mindful breathing daily.`;
+
+    if ($('lucky-elements')) {
+        $('lucky-elements').innerHTML = `
+            <div class="lucky-element"><div class="lucky-element-label">Lucky Color</div><div class="lucky-element-value">Violet & Blue</div></div>
+            <div class="lucky-element"><div class="lucky-element-label">Lucky Numbers</div><div class="lucky-element-value">3, 7, 9</div></div>
+            <div class="lucky-element"><div class="lucky-element-label">Lucky Day</div><div class="lucky-element-value">Wednesday</div></div>
+            <div class="lucky-element"><div class="lucky-element-label">Gemstone</div><div class="lucky-element-value">Sapphire</div></div>
+        `;
+    }
+
+    if ($('daily-horoscope')) {
+        $('daily-horoscope').textContent = `🌟 ${sunSign.name} Horoscope Today: Your creative energy is soaring! A great day to start new projects, communicate bold ideas, and spend time with loved ones. Trust your instincts.`;
+    }
+}
+
+// --- Health / BMI Calculator Engine ---
+function calculateHealthStatus() {
+    const gender = $('gender-select')?.value || 'male';
+    const height = parseFloat($('height-input')?.value) || 175;
+    const weight = parseFloat($('weight-input')?.value) || 70;
+    const heightUnit = $('height-unit')?.value || 'cm';
+    const weightUnit = $('weight-unit')?.value || 'kg';
+
+    const heightCm = heightUnit === 'ft' ? height * 30.48 : height;
+    const weightKg = weightUnit === 'lbs' ? weight * 0.453592 : weight;
+
+    const heightM = heightCm / 100;
+    const bmi = weightKg / (heightM * heightM);
+
+    const bmiValEl = $('bmi-value');
+    const bmiStatusEl = $('bmi-status');
+    const heightPercEl = $('height-percentile');
+    const weightPercEl = $('weight-percentile');
+    const hwResultsEl = $('hw-results');
+
+    if (bmiValEl) bmiValEl.textContent = bmi.toFixed(1);
+
+    let statusText = 'Normal';
+    let statusClass = 'healthy';
+    if (bmi < 18.5) { statusText = 'Underweight'; statusClass = 'attention'; }
+    else if (bmi >= 25 && bmi < 30) { statusText = 'Overweight'; statusClass = 'warning'; }
+    else if (bmi >= 30) { statusText = 'Obese'; statusClass = 'attention'; }
+
+    if (bmiStatusEl) {
+        bmiStatusEl.textContent = statusText;
+        bmiStatusEl.className = `hw-result-status ${statusClass}`;
+    }
+
+    const heightPerc = Math.min(99, Math.max(1, Math.round((heightCm - 150) * 2.5)));
+    const weightPerc = Math.min(99, Math.max(1, Math.round((weightKg - 40) * 1.5)));
+
+    if (heightPercEl) heightPercEl.textContent = `${heightPerc}%`;
+    if (weightPercEl) weightPercEl.textContent = `${weightPerc}%`;
+
+    if (hwResultsEl) hwResultsEl.classList.remove('hidden');
+}
+
+// --- Timeline & Love Line ---
+function updateLoveLifeLine(ageYears) {
+    const status = $('relationship-status')?.value || 'single';
+    const duration = parseFloat($('relationship-duration')?.value) || 0;
+    const totalRels = parseFloat($('total-relationships')?.value) || 0;
+
+    let loveAge = duration + (totalRels > 1 ? (totalRels - 1) * 2 : 0);
+    let singleTime = Math.max(0, ageYears - loveAge);
+    let lovePct = ageYears > 0 ? ((loveAge / ageYears) * 100).toFixed(1) : 0;
+
+    if ($('love-age')) $('love-age').textContent = loveAge.toFixed(1);
+    if ($('single-time')) $('single-time').textContent = singleTime.toFixed(1);
+    if ($('love-percentage')) $('love-percentage').textContent = `${lovePct}%`;
+
+    if ($('love-insights')) {
+        $('love-insights').innerHTML = `
+            <strong>💭 Life & Relationship Dynamics:</strong><br>
+            You have spent ~${lovePct}% of your lifetime in romantic relationships or active growth phases. Whether single or committed, your personal freedom and emotional wisdom continue to evolve beautifully!
+        `;
+    }
+}
+
+function updateMilestonesAndBadges(ageYears, dob) {
+    const milestones = [18, 21, 25, 30, 40, 50, 60, 75, 100];
+    const upcoming = milestones.filter(m => m > ageYears).slice(0, 4);
+
+    if ($('milestones-list')) {
+        $('milestones-list').innerHTML = upcoming.map(m => `
+            <div class="milestone">
+                <div class="milestone-age">${m} Years Old</div>
+                <div class="milestone-time">${m - ageYears} Years Left</div>
+            </div>
+        `).join('');
+    }
+
+    const badges = [
+        { name: 'First Steps', icon: '👶', age: 1 },
+        { name: 'Legal Adult', icon: '🆔', age: 18 },
+        { name: 'Quarter Century', icon: '🎂', age: 25 },
+        { name: 'Thirties Club', icon: '💼', age: 30 },
+        { name: 'Half Century', icon: '🎯', age: 50 },
+        { name: 'Golden Jubilee', icon: '👑', age: 60 }
     ];
 
-    const upcoming = milestones.filter(m => m.age > age).slice(0, 3);
-    return upcoming.map(m => ({
-        ...m,
-        yearsLeft: m.age - age
-    }));
+    if ($('achievements-list')) {
+        $('achievements-list').innerHTML = badges.map(b => `
+            <div class="badge ${ageYears >= b.age ? 'unlocked' : ''}">
+                <span class="badge-icon">${b.icon}</span>
+                <span>${b.name}</span>
+            </div>
+        `).join('');
+    }
+
+    const timelineEvents = [
+        { age: 0, title: 'Born into the world', date: dob.getFullYear() },
+        { age: 18, title: 'Reached Adulthood', date: dob.getFullYear() + 18 },
+        { age: 25, title: 'Quarter Century Milestone', date: dob.getFullYear() + 25 },
+        { age: 50, title: 'Golden Milestone', date: dob.getFullYear() + 50 }
+    ];
+
+    if ($('life-timeline')) {
+        $('life-timeline').innerHTML = timelineEvents.map(e => `
+            <div class="timeline-item ${ageYears >= e.age ? 'past' : 'future'}">
+                <strong>${e.age} Yrs - ${e.title}</strong>
+                <span>${e.date}</span>
+            </div>
+        `).join('');
+    }
 }
 
-// Calculate Countdown
-function calculateCountdown(nextBirthday) {
-    const now = new Date();
-    const diff = nextBirthday - now;
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    return { days, hours, minutes, seconds };
+// --- Story Poster Generator ---
+function updateStoryPoster(age, zodiac, totalDays) {
+    if ($('poster-years')) $('poster-years').textContent = age.years;
+    if ($('poster-zodiac-icon')) $('poster-zodiac-icon').textContent = zodiac.icon;
+    if ($('poster-zodiac-name')) $('poster-zodiac-name').textContent = zodiac.name;
+    if ($('poster-days-lived')) $('poster-days-lived').textContent = `${totalDays.toLocaleString()} Days Lived`;
 }
 
-// Update Progress Bar
-function updateProgressBar(age) {
-    const averageLifeExpectancy = 75; // Global average
-    const progress = Math.min((age / averageLifeExpectancy) * 100, 100);
-    
-    $('life-progress').style.width = progress + '%';
-    $('progress-text').textContent = `${progress.toFixed(1)}% of average life expectancy`;
+// --- Confetti Effect ---
+function triggerConfetti() {
+    const container = $('confetti-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const particleCount = window.innerWidth <= 768 ? 25 : 60;
+
+    for (let i = 0; i < particleCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        container.appendChild(confetti);
+    }
+    setTimeout(() => { container.innerHTML = ''; }, 4000);
 }
 
-function render(dob) {
-    const now = new Date();
-    const age = calculateAgeParts(dob, now);
-    const totals = calculateTotals(new Date(dob.getFullYear(), dob.getMonth(), dob.getDate()), now);
-    const nextB = computeNextBirthday(dob, now);
-
-    animateNumber($('years'), age.years, 350);
-    animateNumber($('months'), age.months, 350);
-    animateNumber($('days'), age.days, 350);
-
-    animateNumber($('hoursTotal'), totals.totalHours, 350);
-    animateNumber($('minutesTotal'), totals.totalMinutes, 350);
-    animateNumber($('secondsTotal'), totals.totalSeconds, 350);
-
-    $('next-birthday-date').textContent = formatDateHuman(nextB.date);
-    $('next-birthday-weekday').textContent = weekdayName(nextB.date);
-    $('days-until').textContent = nextB.daysLeft.toString();
-
-    const turning = age.years + (nextB.daysLeft === 0 ? 0 : 1);
-    $('next-birthday-date').setAttribute('title', `Turning ${turning}`);
-
-    // Update all new features
-    const zodiac = getZodiacSign(dob.getMonth() + 1, dob.getDate());
-    $('zodiac-icon').textContent = zodiac.icon;
-    $('zodiac-name').textContent = zodiac.name;
-    $('zodiac-dates').textContent = `${zodiac.startMonth}/${zodiac.startDay} - ${zodiac.endMonth}/${zodiac.endDay}`;
-
-    updateProgressBar(age.years);
-
-    const milestones = calculateMilestones(age.years);
-    const milestonesList = $('milestones-list');
-    milestonesList.innerHTML = milestones.map(m => `
-        <div class="milestone">
-            <span class="milestone-age">${m.age} years</span>
-            <span class="milestone-time">${m.yearsLeft} years left</span>
-        </div>
-    `).join('');
-
-    const countdown = calculateCountdown(nextB.date);
-    $('countdown-days').textContent = countdown.days;
-    $('countdown-hours').textContent = countdown.hours;
-    $('countdown-minutes').textContent = countdown.minutes;
-    $('countdown-seconds').textContent = countdown.seconds;
-
-    // Update achievements
-    const achievements = calculateAchievements(age.years);
-    const achievementsList = $('achievements-list');
-    achievementsList.innerHTML = achievements.slice(0, 8).map(achievement => `
-        <div class="badge ${achievement.unlocked ? 'unlocked' : 'locked'}" title="${achievement.description}">
-            <span class="badge-icon">${achievement.icon}</span>
-            <span>${achievement.name}</span>
-        </div>
-    `).join('');
-
-    // Update timeline
-    const timeline = calculateLifeTimeline(dob, age.years);
-    const timelineList = $('life-timeline');
-    timelineList.innerHTML = timeline.slice(0, 6).map(item => `
-        <div class="timeline-item ${item.type}">
-            <div class="timeline-age">${item.age} years</div>
-            <div class="timeline-event">${item.event}</div>
-            <div class="timeline-date">${item.date.toLocaleDateString()}</div>
-        </div>
-    `).join('');
-    
-    // Update new Visual Enhancements and Social Features
-    enhanceAgeCalculation(dob, now);
-    
-    // Update Life Line & Love Life Line
-    updateLifeLoveLines(dob, now, age.years);
-}
-
-function startTicker(dob) {
-    if (tickerId) clearInterval(tickerId);
-    
-    // Optimize ticker for mobile - slower update on mobile for better performance
-    const isMobile = window.innerWidth <= 768;
-    const interval = isMobile ? 2000 : 1000; // 2 seconds on mobile, 1 second on desktop
-    
-    tickerId = setInterval(() => render(dob), interval);
-}
-
+// --- Main Calculation Dispatcher ---
 function calculateAndShow() {
-    const raw = dobInputEl.value;
+    const raw = dobInputEl?.value;
     const dob = raw ? new Date(raw) : null;
+
     if (!validateDob(dob)) {
-        errorMessageEl.style.display = 'block';
-        hideResults();
-        if (tickerId) { clearInterval(tickerId); tickerId = null; }
+        if (errorMessageEl) errorMessageEl.style.display = 'block';
+        if (resultContainerEl) resultContainerEl.classList.add('hidden');
         return;
     }
-    errorMessageEl.style.display = 'none';
-    showResults();
-    render(dob);
-    startTicker(dob);
-    
-    // Trigger confetti on first calculation
-    createConfetti();
+
+    if (errorMessageEl) errorMessageEl.style.display = 'none';
+    currentDob = dob;
+
+    const now = new Date();
+    const age = calculateAgeParts(dob, now);
+    const totals = calculateTotals(dob, now);
+    const nextB = computeNextBirthday(dob, now);
+    const zodiac = getZodiacSign(dob.getMonth() + 1, dob.getDate());
+
+    // Overview Tab Updates
+    animateNumber($('years'), age.years);
+    animateNumber($('months'), age.months);
+    animateNumber($('days'), age.days);
+
+    animateNumber($('hoursTotal'), totals.totalHours);
+    animateNumber($('minutesTotal'), totals.totalMinutes);
+    animateNumber($('secondsTotal'), totals.totalSeconds);
+
+    if ($('next-birthday-date')) $('next-birthday-date').textContent = nextB.date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    if ($('next-birthday-weekday')) $('next-birthday-weekday').textContent = nextB.date.toLocaleDateString(undefined, { weekday: 'long' });
+
+    const countdown = {
+        days: nextB.daysLeft,
+        hours: 23 - now.getHours(),
+        minutes: 59 - now.getMinutes(),
+        seconds: 59 - now.getSeconds()
+    };
+
+    if ($('countdown-days')) $('countdown-days').textContent = countdown.days;
+    if ($('countdown-hours')) $('countdown-hours').textContent = countdown.hours;
+    if ($('countdown-minutes')) $('countdown-minutes').textContent = countdown.minutes;
+    if ($('countdown-seconds')) $('countdown-seconds').textContent = countdown.seconds;
+
+    // Progress Bar
+    const lifeExpectancy = 75;
+    const progressPct = Math.min(100, ((age.years / lifeExpectancy) * 100)).toFixed(1);
+    if ($('life-progress')) $('life-progress').style.width = `${progressPct}%`;
+    if ($('progress-text')) $('progress-text').textContent = `${progressPct}% of average life expectancy (75 yrs)`;
+
+    // Additional Features
+    updateDayOfBirthTrivia(dob);
+    startLiveMillisecondTicker(dob);
+    updatePlanetaryAge(totals.totalDays);
+    updateVitals(totals);
+    updateAstrology(dob);
+    calculateHealthStatus();
+    updateLoveLifeLine(age.years);
+    updateMilestonesAndBadges(age.years, dob);
+    updateStoryPoster(age, zodiac, totals.totalDays);
+
+    // Show Results Panel
+    if (resultContainerEl) {
+        resultContainerEl.classList.remove('hidden');
+        resultContainerEl.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    triggerConfetti();
 }
 
-$('calculate-btn').addEventListener('click', calculateAndShow);
-dobInputEl.addEventListener('input', () => {
-    clearTimeout(inputDebounceId);
-    inputDebounceId = setTimeout(calculateAndShow, 150);
-    syncDobPlaceholder();
-});
-dobInputEl.addEventListener('focus', syncDobPlaceholder);
-dobInputEl.addEventListener('blur', syncDobPlaceholder);
-
-// Calendar button opens native picker (where supported)
-dobPickerBtnEl.addEventListener('click', () => {
-    try {
-        if (typeof dobInputEl.showPicker === 'function') {
-            dobInputEl.showPicker();
-        } else {
-            dobInputEl.focus();
-            dobInputEl.click();
-        }
-    } catch (_) {
-        dobInputEl.focus();
-        dobInputEl.click();
-    }
-});
-
-// Copy and Share
-$('copy-btn').addEventListener('click', async () => {
-    const years = $('years').textContent;
-    const months = $('months').textContent;
-    const days = $('days').textContent;
-    const hours = $('hoursTotal').textContent;
-    const minutes = $('minutesTotal').textContent;
-    const seconds = $('secondsTotal').textContent;
-    const nextDate = $('next-birthday-date').textContent;
-    const weekday = $('next-birthday-weekday').textContent;
-    const daysLeft = $('days-until').textContent;
-    const zodiacName = $('zodiac-name').textContent;
-    const text = `My age is ${years} years, ${months} months, and ${days} days.\n` +
-                 `Zodiac Sign: ${zodiacName}\n` +
-                 `Total lived: ${hours} hours, ${minutes} minutes, ${seconds} seconds.\n` +
-                 `Next birthday: ${nextDate} (${weekday}), ${daysLeft} days left.`;
-    try {
-        await navigator.clipboard.writeText(text);
-        alert('Copied to clipboard!');
-    } catch (_) {
-        // Fallback
+// --- Social Sharing Helpers ---
+function copyTextToClipboard(text, message = 'Copied to clipboard!') {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => alert(message));
+    } else {
         const ta = document.createElement('textarea');
         ta.value = text;
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
-        alert('Copied to clipboard!');
+        alert(message);
     }
-});
+}
 
-$('share-btn').addEventListener('click', async () => {
-    const years = $('years').textContent;
-    const months = $('months').textContent;
-    const days = $('days').textContent;
-    const nextDate = $('next-birthday-date').textContent;
-    const daysLeft = $('days-until').textContent;
-    const zodiacName = $('zodiac-name').textContent;
-    const title = 'My Age Result';
-    const text = `I am ${years} years, ${months} months, and ${days} days old. Zodiac: ${zodiacName}. Next birthday: ${nextDate} (${daysLeft} days left).`;
-    try {
-        if (navigator.share) {
-            await navigator.share({ title, text });
-        } else {
-            await navigator.clipboard.writeText(text);
-            alert('Share not supported. Copied to clipboard instead.');
-        }
-    } catch (_) {
-        // user cancelled or not supported
-    }
-});
+// --- DOM Event Listeners Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    initTabs();
 
-    // ===== NEW VISUAL ENHANCEMENTS FUNCTIONALITY =====
-
-    // Age in different units calculation
-    function updateAgeUnits(ageInDays) {
-        const minutes = ageInDays * 24 * 60;
-        const seconds = minutes * 60;
-        const heartbeats = seconds * 80; // Average 80 beats per minute
-        const blinks = seconds * 0.033; // Average blink every 30 seconds
-
-        $('age-minutes').textContent = formatLargeNumber(minutes);
-        $('secondsTotal').textContent = formatLargeNumber(seconds);
-        $('age-heartbeats').textContent = formatLargeNumber(Math.floor(heartbeats));
-        $('age-blinks').textContent = formatLargeNumber(Math.floor(blinks));
-    }
-
-    // Format large numbers with commas
-    function formatLargeNumber(num) {
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-
-    // Seasonal theme detection
-    function updateSeasonalTheme() {
-        const now = new Date();
-        const month = now.getMonth() + 1;
-        const day = now.getDate();
-        
-        let season, icon, dates;
-        
-        if ((month === 3 && day >= 20) || month === 4 || month === 5 || (month === 6 && day <= 20)) {
-            season = "Spring";
-            icon = "🌸";
-            dates = "Mar 20 - Jun 20";
-        } else if ((month === 6 && day >= 21) || month === 7 || month === 8 || (month === 9 && day <= 22)) {
-            season = "Summer";
-            icon = "☀️";
-            dates = "Jun 21 - Sep 22";
-        } else if ((month === 9 && day >= 23) || month === 10 || month === 11 || (month === 12 && day <= 20)) {
-            season = "Autumn";
-            icon = "🍂";
-            dates = "Sep 23 - Dec 20";
-        } else {
-            season = "Winter";
-            icon = "❄️";
-            dates = "Dec 21 - Mar 19";
-        }
-        
-        $('season-icon').textContent = icon;
-        $('season-name').textContent = season;
-        $('season-dates').textContent = dates;
-    }
-
-    // Custom theme selector
-    function initializeThemeSelector() {
-        const themeOptions = document.querySelectorAll('.theme-option');
-        
-        themeOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                // Remove active class from all options
-                themeOptions.forEach(opt => opt.classList.remove('active'));
-                // Add active class to clicked option
-                option.classList.add('active');
-                
-                const theme = option.dataset.theme;
-                applyCustomTheme(theme);
-            });
-        });
-        
-        // Set default theme as active
-        document.querySelector('[data-theme="default"]').classList.add('active');
-    }
-
-    // Apply custom themes
-    function applyCustomTheme(theme) {
-        const container = document.querySelector('.calculator-container');
-        
-        // Remove existing theme classes
-        container.classList.remove('theme-ocean', 'theme-sunset', 'theme-forest');
-        
-        if (theme !== 'default') {
-            container.classList.add(`theme-${theme}`);
-        }
-        
-        // Store theme preference
-        localStorage.setItem('preferred-theme', theme);
-    }
-
-    // ===== NEW SOCIAL FEATURES FUNCTIONALITY =====
-
-    // Initialize social features
-    function initializeSocialFeatures() {
-        // Age challenges
-        initializeAgeChallenges();
-        
-        // Social content previews
-        initializeSocialContent();
-        
-        // Achievement sharing
-        initializeAchievementSharing();
-    }
-
-    // Age challenges functionality
-    function initializeAgeChallenges() {
-        // Share age in seconds
-        $('share-seconds-btn').addEventListener('click', () => {
-            const ageInSeconds = parseInt($('secondsTotal').textContent.replace(/,/g, ''));
-            const text = `I'm exactly ${formatLargeNumber(ageInSeconds)} seconds old! ⏰ #AgeCalculator`;
-            shareText(text);
-        });
-        
-        // Share birthday countdown
-        $('share-countdown-btn').addEventListener('click', () => {
-            const daysLeft = $('days-until').textContent;
-            const text = `My next birthday is in ${daysLeft} days! 🎂 #BirthdayCountdown`;
-            shareText(text);
-        });
-        
-        // Share milestone
-        $('share-milestone-btn').addEventListener('click', () => {
-            const years = $('years').textContent;
-            const text = `Just reached ${years} years milestone! 🏆 #AgeMilestone`;
-            shareText(text);
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('theme-mode', isDark ? 'dark' : 'light');
+            themeToggleBtn.innerHTML = isDark ?
+                '<i class="fa-solid fa-sun"></i><span class="theme-text">Light Mode</span>' :
+                '<i class="fa-solid fa-moon"></i><span class="theme-text">Dark Mode</span>';
         });
     }
 
-    // Social content functionality
-    function initializeSocialContent() {
-        // Instagram preview
-        $('copy-instagram-btn').addEventListener('click', () => {
-            const years = $('years').textContent;
-            const months = $('months').textContent;
-            const days = $('days').textContent;
-            const text = `I'm exactly ${years} years, ${months} months, ${days} days old! 🎉`;
-            copyToClipboard(text);
-            showCopySuccess('Instagram text copied!');
+    document.querySelectorAll('.theme-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            applyCustomThemeStyle(btn.dataset.theme);
         });
-        
-        // Twitter preview
-        $('copy-twitter-btn').addEventListener('click', () => {
-            const years = $('years').textContent;
-            const daysLeft = $('days-until').textContent;
-            const progress = document.querySelector('#life-progress').style.width;
-            const text = `Age: ${years} years | Next birthday in ${daysLeft} days | Life progress: ${progress} 🚀`;
-            copyToClipboard(text);
-            showCopySuccess('Twitter text copied!');
-        });
-        
-        // WhatsApp preview
-        $('copy-whatsapp-btn').addEventListener('click', () => {
-            const years = $('years').textContent;
-            const months = $('months').textContent;
-            const days = $('days').textContent;
-            const text = `🎂 My age journey: ${years} years, ${months} months, ${days} days! #AgeCalculator`;
-            copyToClipboard(text);
-            showCopySuccess('WhatsApp text copied!');
-        });
-    }
-
-    // Achievement sharing functionality
-    function initializeAchievementSharing() {
-        // First time user achievement
-        $('share-first-user-btn').addEventListener('click', () => {
-            const text = `Just discovered this amazing Age Calculator! ✨ #FirstTimeUser #AgeCalculator`;
-            shareText(text);
-        });
-        
-        // Milestone achievement
-        $('share-milestone-achievement-btn').addEventListener('click', () => {
-            const years = $('years').textContent;
-            const text = `Reached ${years} years milestone! 🎯 #MilestoneAchievement #AgeCalculator`;
-            shareText(text);
-        });
-        
-        // Zodiac discovery
-        $('share-zodiac-btn').addEventListener('click', () => {
-            const zodiacName = $('zodiac-name').textContent;
-            const text = `Just discovered I'm a ${zodiacName}! 🌟 #ZodiacDiscovery #AgeCalculator`;
-            shareText(text);
-        });
-    }
-
-    // Utility functions for social features
-    function shareText(text) {
-        if (navigator.share) {
-            navigator.share({
-                title: 'My Age Calculation',
-                text: text,
-                url: 'https://dipukraj.me/age-calculator' // Use your actual website URL
-            });
-        } else {
-            // Fallback: copy to clipboard
-            copyToClipboard(text);
-            showCopySuccess('Text copied! Share it manually.');
-        }
-    }
-
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('Text copied to clipboard');
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-        });
-    }
-
-    function showCopySuccess(message) {
-        // Create a temporary success message
-        const successMsg = document.createElement('div');
-        successMsg.textContent = message;
-        successMsg.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        `;
-        
-        document.body.appendChild(successMsg);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            successMsg.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                document.body.removeChild(successMsg);
-            }, 300);
-        }, 3000);
-    }
-
-    // ===== INITIALIZATION =====
-
-    // Initialize new features when page loads
-    document.addEventListener('DOMContentLoaded', () => {
-        // Existing initialization code...
-        
-        // Initialize new features
-        initializeThemeSelector();
-        initializeSocialFeatures();
-        updateSeasonalTheme();
-        
-        // Load saved theme preference
-        const savedTheme = localStorage.getItem('preferred-theme');
-        if (savedTheme && savedTheme !== 'default') {
-            applyCustomTheme(savedTheme);
-            document.querySelector(`[data-theme="${savedTheme}"]`).classList.add('active');
-        }
-
-        // Initialize Height & Weight Calculator
-        initializeHeightWeightCalculator();
-        
-        // Initialize Life Line & Love Life Line
-        initializeLoveLifeInputs();
-        
-        // Initialize Astrology Features
-        initializeAstrologyFeatures();
     });
 
-    // Age calculation enhancement functions
-    function enhanceAgeCalculation(dob, now) {
-        const ageInDays = Math.floor((now - dob) / (1000 * 60 * 60 * 24));
-        updateAgeUnits(ageInDays);
-        updateSocialContent();
-    }
-
-    // Update social content previews
-    function updateSocialContent() {
-        const years = $('years').textContent;
-        const months = $('months').textContent;
-        const days = $('days').textContent;
-        const daysLeft = $('days-until').textContent;
-        const progress = document.querySelector('#life-progress').style.width;
-        
-        // Update Instagram preview
-        const instagramText = `I'm exactly ${years} years, ${months} months, ${days} days old! 🎉`;
-        document.querySelector('#instagram-preview .preview-text').textContent = instagramText;
-        
-        // Update Twitter preview
-        const twitterText = `Age: ${years} years | Next birthday in ${daysLeft} days | Life progress: ${progress} 🚀`;
-        document.querySelector('#twitter-preview .preview-text').textContent = twitterText;
-        
-        // Update WhatsApp preview
-        const whatsappText = `🎂 My age journey: ${years} years, ${months} months, ${days} days! #AgeCalculator`;
-        document.querySelector('#whatsapp-preview .preview-text').textContent = whatsappText;
-    }
-
-// Life Line & Love Life Line Functions
-function updateLifeLoveLines(dob, now, currentAge) {
-    // Calculate Life Line
-    calculateLifeLine(currentAge);
-    
-    // Calculate Love Life Line
-    calculateLoveLifeLine(currentAge);
-    
-    // Update comparison
-    updateLifeLoveComparison();
-}
-
-function calculateLifeLine(currentAge) {
-    // Calculate life expectancy based on age and general factors
-    let lifeExpectancy = 75; // Base expectancy
-    
-    // Adjust based on current age (people who live longer tend to live even longer)
-    if (currentAge > 60) {
-        lifeExpectancy = 85;
-    } else if (currentAge > 40) {
-        lifeExpectancy = 80;
-    } else if (currentAge > 20) {
-        lifeExpectancy = 78;
-    }
-    
-    const yearsCompleted = currentAge;
-    const yearsRemaining = Math.max(0, lifeExpectancy - currentAge);
-    const lifeProgress = (yearsCompleted / lifeExpectancy) * 100;
-    
-    // Update UI
-    $('life-expectancy').textContent = lifeExpectancy;
-    $('life-completed').textContent = yearsCompleted;
-    $('life-remaining').textContent = yearsRemaining;
-    $('life-line-fill').style.width = Math.min(lifeProgress, 100) + '%';
-    
-    // Generate life insights
-    generateLifeInsights(currentAge, lifeExpectancy, yearsRemaining);
-}
-
-function calculateLoveLifeLine(currentAge) {
-    const relationshipStatus = $('relationship-status').value;
-    const relationshipDuration = parseFloat($('relationship-duration').value) || 0;
-    const totalRelationships = parseFloat($('total-relationships').value) || 0;
-    
-    // Calculate love age (total time in relationships)
-    let loveAge = relationshipDuration;
-    
-    // Add estimated time from previous relationships (if any)
-    if (totalRelationships > 1) {
-        const avgRelationshipLength = 2; // Average 2 years per relationship
-        loveAge += (totalRelationships - 1) * avgRelationshipLength;
-    }
-    
-    // Calculate single time
-    const singleTime = Math.max(0, currentAge - loveAge);
-    
-    // Calculate love percentage of life
-    const lovePercentage = currentAge > 0 ? (loveAge / currentAge) * 100 : 0;
-    
-    // Update UI
-    $('love-age').textContent = loveAge.toFixed(1);
-    $('single-time').textContent = singleTime.toFixed(1);
-    $('love-percentage').textContent = lovePercentage.toFixed(1) + '%';
-    $('love-life-fill').style.width = Math.min(lovePercentage, 100) + '%';
-    
-    // Generate love insights
-    generateLoveInsights(currentAge, loveAge, singleTime, relationshipStatus);
-}
-
-function updateLifeLoveComparison() {
-    const currentAge = parseFloat($('life-completed').textContent);
-    const lifeExpectancy = parseFloat($('life-expectancy').textContent);
-    const loveAge = parseFloat($('love-age').textContent);
-    
-    const lifeProgress = (currentAge / lifeExpectancy) * 100;
-    const loveProgress = currentAge > 0 ? (loveAge / currentAge) * 100 : 0;
-    
-    // Update comparison bars
-    $('life-comparison-fill').style.width = Math.min(lifeProgress, 100) + '%';
-    $('love-comparison-fill').style.width = Math.min(loveProgress, 100) + '%';
-    
-    // Generate comparison insight
-    generateComparisonInsight(lifeProgress, loveProgress);
-}
-
-function generateLifeInsights(currentAge, lifeExpectancy, yearsRemaining) {
-    let insights = [];
-    
-    if (currentAge < 18) {
-        insights.push("🌟 You're in the exciting phase of youth and discovery!");
-        insights.push("💡 Focus on education and personal growth.");
-    } else if (currentAge < 30) {
-        insights.push("🚀 You're in your prime years - make the most of them!");
-        insights.push("💼 Build your career and relationships.");
-    } else if (currentAge < 50) {
-        insights.push("🏠 You're in the establishment phase of life.");
-        insights.push("⚖️ Balance work, family, and personal time.");
-    } else if (currentAge < 70) {
-        insights.push("🌅 You're in the golden years - enjoy your wisdom!");
-        insights.push("🎯 Focus on what truly matters to you.");
-    } else {
-        insights.push("👑 You're a living legend with incredible life experience!");
-        insights.push("💎 Share your wisdom with younger generations.");
-    }
-    
-    if (yearsRemaining > 0) {
-        insights.push(`⏰ You have approximately ${yearsRemaining} years ahead to create more memories.`);
-    }
-    
-    $('life-insights').innerHTML = `<strong>💭 Life Insights:</strong><br>${insights.join('<br>')}`;
-}
-
-function generateLoveInsights(currentAge, loveAge, singleTime, relationshipStatus) {
-    let insights = [];
-    
-    if (relationshipStatus === 'single') {
-        if (singleTime > currentAge * 0.8) {
-            insights.push("💫 You're enjoying your independence and freedom!");
-            insights.push("💝 Love will find you when you're ready.");
-        } else {
-            insights.push("💕 You've experienced love and are currently single.");
-            insights.push("🔄 Life has cycles - this is just a phase.");
-        }
-    } else if (relationshipStatus === 'dating') {
-        insights.push("💑 You're in the exciting dating phase!");
-        insights.push("🌹 Enjoy getting to know each other.");
-    } else if (relationshipStatus === 'engaged') {
-        insights.push("💍 You're about to start a beautiful journey together!");
-        insights.push("🎉 Congratulations on your engagement!");
-    } else if (relationshipStatus === 'married') {
-        insights.push("💒 You've made a beautiful commitment to love!");
-        insights.push("❤️ Marriage is a journey of growth together.");
-    } else {
-        insights.push("💭 Love is complex and beautiful.");
-        insights.push("🌈 Every relationship teaches us something valuable.");
-    }
-    
-    const lovePercentage = currentAge > 0 ? (loveAge / currentAge) * 100 : 0;
-    if (lovePercentage > 50) {
-        insights.push("💖 You've spent most of your life in relationships - you're a romantic soul!");
-    } else if (lovePercentage < 20) {
-        insights.push("🌟 You've enjoyed your independence and personal growth!");
-    }
-    
-    $('love-insights').innerHTML = `<strong>💭 Love Insights:</strong><br>${insights.join('<br>')}`;
-}
-
-function generateComparisonInsight(lifeProgress, loveProgress) {
-    let insight = "";
-    
-    if (loveProgress > lifeProgress) {
-        insight = "💕 Love has been a bigger part of your life than average! You're a romantic at heart.";
-    } else if (loveProgress < lifeProgress * 0.3) {
-        insight = "🌟 You've focused more on personal growth and independence. Both paths are beautiful!";
-    } else {
-        insight = "⚖️ You have a balanced approach to life and love. Well done!";
-    }
-    
-    $('comparison-insight').innerHTML = `<strong>💭 Comparison Insight:</strong><br>${insight}`;
-}
-
-// Astrology & Life Predictions Functions
-function initializeAstrologyFeatures() {
-    const generateBtn = $('generate-predictions-btn');
-    if (generateBtn) {
-        generateBtn.addEventListener('click', generateAstrologyPredictions);
-    }
-}
-
-function generateAstrologyPredictions() {
-    const dob = dobInputEl.value ? new Date(dobInputEl.value) : null;
-    if (!dob) {
-        alert('Please enter your date of birth first!');
-        return;
-    }
-
-    const birthHour = parseInt($('birth-hour').value) || 12;
-    const birthMinute = parseInt($('birth-minute').value) || 0;
-    const birthPlace = $('birth-place').value || 'Unknown';
-
-    // Calculate zodiac signs
-    const sunSign = getZodiacSign(dob.getMonth() + 1, dob.getDate());
-    const moonSign = calculateMoonSign(dob, birthHour, birthMinute);
-    const risingSign = calculateRisingSign(dob, birthHour, birthMinute);
-
-    // Update planetary info
-    $('sun-sign').textContent = sunSign.name;
-    $('moon-sign').textContent = moonSign;
-    $('rising-sign').textContent = risingSign;
-
-    // Generate predictions
-    generateLovePredictions(sunSign, moonSign);
-    generateStudyPredictions(sunSign, risingSign);
-    generateChallengePredictions(sunSign, moonSign);
-    generateLuckyElements(sunSign, moonSign);
-    generateDailyHoroscope(sunSign);
-
-    // Show results
-    $('astrology-results').classList.remove('hidden');
-    $('astrology-results').scrollIntoView({ behavior: 'smooth' });
-}
-
-function calculateMoonSign(dob, hour, minute) {
-    // Simplified moon sign calculation based on birth date and time
-    const moonSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
-                      'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-    
-    const dayOfYear = Math.floor((dob - new Date(dob.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-    const timeFactor = hour + minute / 60;
-    const moonIndex = Math.floor((dayOfYear + timeFactor / 24) / 2.5) % 12;
-    
-    return moonSigns[moonIndex];
-}
-
-function calculateRisingSign(dob, hour, minute) {
-    // Simplified rising sign calculation
-    const risingSigns = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 
-                        'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-    
-    const month = dob.getMonth();
-    const timeFactor = hour + minute / 60;
-    const risingIndex = Math.floor((month * 2 + timeFactor / 2) % 12);
-    
-    return risingSigns[risingIndex];
-}
-
-function generateLovePredictions(sunSign, moonSign) {
-    const lovePredictions = {
-        'Aries': {
-            prediction: "Your fiery nature makes you passionate in love. You need someone who can match your energy and independence. You're currently seeking excitement and adventure in relationships.",
-            remedy: "💝 Practice patience and listen to your partner's needs. Wear red or pink on Fridays for love luck."
-        },
-        'Taurus': {
-            prediction: "You're loyal and devoted in love, seeking stability and security. You value physical affection and material comforts. Your love life needs more spontaneity.",
-            remedy: "🌹 Express your feelings more openly. Wear green or pink colors. Practice gratitude for love."
-        },
-        'Gemini': {
-            prediction: "You're communicative and curious in love, but sometimes struggle with commitment. You need intellectual stimulation in relationships. Your love life needs more emotional depth.",
-            remedy: "💬 Focus on deep conversations with your partner. Wear yellow or light blue. Practice emotional consistency."
-        },
-        'Cancer': {
-            prediction: "You're nurturing and protective in love, creating strong emotional bonds. You need security and family connection. Your love life is blessed with emotional intelligence.",
-            remedy: "🏠 Create a loving home environment. Wear white or silver. Practice self-care and emotional balance."
-        },
-        'Leo': {
-            prediction: "You're generous and dramatic in love, seeking admiration and loyalty. You need to be the center of attention. Your love life needs more humility and compromise.",
-            remedy: "👑 Share the spotlight with your partner. Wear gold or orange. Practice generosity without expecting returns."
-        },
-        'Virgo': {
-            prediction: "You're practical and helpful in love, but sometimes too critical. You seek perfection and order. Your love life needs more acceptance and less analysis.",
-            remedy: "✨ Accept imperfections in love. Wear green or brown. Practice unconditional acceptance."
-        },
-        'Libra': {
-            prediction: "You're diplomatic and romantic in love, seeking harmony and balance. You avoid conflict and need partnership. Your love life needs more assertiveness.",
-            remedy: "⚖️ Stand up for your needs in relationships. Wear pink or light blue. Practice healthy boundaries."
-        },
-        'Scorpio': {
-            prediction: "You're intense and passionate in love, seeking deep emotional connection. You're loyal but can be possessive. Your love life needs more trust and letting go.",
-            remedy: "🦂 Practice trust and vulnerability. Wear deep red or black. Release control in relationships."
-        },
-        'Sagittarius': {
-            prediction: "You're adventurous and optimistic in love, seeking freedom and growth. You need space and intellectual stimulation. Your love life needs more commitment and focus.",
-            remedy: "🏹 Commit to one person and build depth. Wear purple or blue. Practice emotional availability."
-        },
-        'Capricorn': {
-            prediction: "You're responsible and ambitious in love, seeking stability and long-term commitment. You're patient but can be reserved. Your love life needs more emotional expression.",
-            remedy: "🐐 Express your feelings more openly. Wear dark green or brown. Practice emotional vulnerability."
-        },
-        'Aquarius': {
-            prediction: "You're unique and independent in love, seeking intellectual connection and freedom. You're humanitarian but can be detached. Your love life needs more emotional intimacy.",
-            remedy: "♒ Connect emotionally with your partner. Wear electric blue or purple. Practice emotional closeness."
-        },
-        'Pisces': {
-            prediction: "You're compassionate and intuitive in love, seeking spiritual connection. You're romantic but can be idealistic. Your love life needs more practical boundaries.",
-            remedy: "🐟 Set healthy boundaries in love. Wear sea green or purple. Practice grounding and reality checks."
-        }
-    };
-
-    const prediction = lovePredictions[sunSign.name] || lovePredictions['Aries'];
-    $('love-prediction').innerHTML = prediction.prediction;
-    $('love-remedy').innerHTML = `<strong>💫 Remedy:</strong> ${prediction.remedy}`;
-}
-
-function generateStudyPredictions(sunSign, risingSign) {
-    const studyPredictions = {
-        'Aries': {
-            prediction: "You excel in competitive environments and leadership roles. Your energy helps you tackle challenging subjects. Focus on practical applications of your studies.",
-            remedy: "📚 Study in short, intense sessions. Use red notebooks. Take breaks to maintain focus."
-        },
-        'Taurus': {
-            prediction: "You have excellent memory and practical learning abilities. You prefer hands-on learning and stable study environments. Your patience helps with complex subjects.",
-            remedy: "📖 Create a comfortable study space. Use green stationery. Study with background music."
-        },
-        'Gemini': {
-            prediction: "You're naturally curious and learn quickly. You excel in communication and technology subjects. Your adaptability helps with diverse topics.",
-            remedy: "💻 Study in different locations. Use yellow highlighters. Discuss topics with others."
-        },
-        'Cancer': {
-            prediction: "You have strong intuitive learning abilities and excellent memory. You prefer familiar study environments. Your emotional intelligence helps with humanities.",
-            remedy: "🏠 Study at home or familiar places. Use white paper. Create emotional connections to topics."
-        },
-        'Leo': {
-            prediction: "You learn best through teaching others and creative expression. You excel in subjects that allow self-expression. Your confidence helps with presentations.",
-            remedy: "👑 Study with others and explain concepts. Use gold pens. Create study presentations."
-        },
-        'Virgo': {
-            prediction: "You have excellent analytical skills and attention to detail. You prefer organized study methods and practical subjects. Your perfectionism helps with accuracy.",
-            remedy: "📝 Create detailed study plans. Use green notebooks. Focus on practical applications."
-        },
-        'Libra': {
-            prediction: "You learn best through discussion and collaboration. You excel in subjects requiring balance and fairness. Your diplomacy helps with group projects.",
-            remedy: "⚖️ Study with partners or groups. Use pink stationery. Create balanced study schedules."
-        },
-        'Scorpio': {
-            prediction: "You have deep analytical abilities and excellent research skills. You prefer intense, focused study sessions. Your intuition helps with complex subjects.",
-            remedy: "🦂 Study in private, quiet spaces. Use deep red pens. Research topics thoroughly."
-        },
-        'Sagittarius': {
-            prediction: "You learn best through exploration and big-picture thinking. You excel in philosophy and international subjects. Your optimism helps with challenging topics.",
-            remedy: "🏹 Study in open spaces. Use purple notebooks. Connect topics to larger concepts."
-        },
-        'Capricorn': {
-            prediction: "You have excellent discipline and long-term planning abilities. You prefer structured learning and practical subjects. Your ambition drives academic success.",
-            remedy: "🐐 Create long-term study goals. Use dark green materials. Study systematically."
-        },
-        'Aquarius': {
-            prediction: "You have innovative thinking and excel in technology and science. You prefer unconventional study methods. Your originality helps with creative solutions.",
-            remedy: "♒ Use technology in studying. Use electric blue materials. Think outside the box."
-        },
-        'Pisces': {
-            prediction: "You have strong creative and intuitive learning abilities. You excel in arts and humanities. Your empathy helps with understanding complex topics.",
-            remedy: "🐟 Study with music or art. Use sea green materials. Trust your intuition."
-        }
-    };
-
-    const prediction = studyPredictions[sunSign.name] || studyPredictions['Aries'];
-    $('study-prediction').innerHTML = prediction.prediction;
-    $('study-remedy').innerHTML = `<strong>💫 Remedy:</strong> ${prediction.remedy}`;
-}
-
-function generateChallengePredictions(sunSign, moonSign) {
-    const challengePredictions = {
-        'Aries': {
-            prediction: "Your main challenge is patience and impulsiveness. You need to think before acting and consider others' feelings. Focus on developing emotional intelligence.",
-            remedy: "🧘 Practice meditation and patience. Count to 10 before reacting. Practice active listening."
-        },
-        'Taurus': {
-            prediction: "Your main challenge is stubbornness and resistance to change. You need to be more flexible and open to new experiences. Focus on adaptability.",
-            remedy: "🔄 Try new things regularly. Practice flexibility exercises. Embrace change gradually."
-        },
-        'Gemini': {
-            prediction: "Your main challenge is inconsistency and scattered energy. You need to focus and commit to long-term goals. Focus on follow-through.",
-            remedy: "🎯 Create daily routines. Use planners and reminders. Practice finishing what you start."
-        },
-        'Cancer': {
-            prediction: "Your main challenge is emotional sensitivity and moodiness. You need to develop emotional resilience and boundaries. Focus on emotional balance.",
-            remedy: "🛡️ Practice emotional boundaries. Use grounding techniques. Practice self-soothing."
-        },
-        'Leo': {
-            prediction: "Your main challenge is ego and need for attention. You need to share the spotlight and practice humility. Focus on genuine connections.",
-            remedy: "🌟 Practice humility and gratitude. Share credit with others. Focus on giving attention."
-        },
-        'Virgo': {
-            prediction: "Your main challenge is perfectionism and overthinking. You need to accept imperfection and trust your instincts. Focus on self-acceptance.",
-            remedy: "✨ Practice self-acceptance. Use 'good enough' approach. Trust your intuition."
-        },
-        'Libra': {
-            prediction: "Your main challenge is indecisiveness and people-pleasing. You need to make decisions confidently and prioritize your needs. Focus on assertiveness.",
-            remedy: "⚖️ Practice decision-making. Set personal boundaries. Prioritize your needs."
-        },
-        'Scorpio': {
-            prediction: "Your main challenge is control and trust issues. You need to let go of control and trust others. Focus on vulnerability and openness.",
-            remedy: "🦂 Practice trust and letting go. Share your feelings openly. Release control."
-        },
-        'Sagittarius': {
-            prediction: "Your main challenge is restlessness and commitment issues. You need to commit to long-term goals and relationships. Focus on stability.",
-            remedy: "🏹 Create long-term commitments. Practice staying in one place. Build deep connections."
-        },
-        'Capricorn': {
-            prediction: "Your main challenge is workaholism and emotional repression. You need to balance work and play, express emotions. Focus on work-life balance.",
-            remedy: "🐐 Schedule fun activities. Express emotions regularly. Practice work-life balance."
-        },
-        'Aquarius': {
-            prediction: "Your main challenge is emotional detachment and rebellion. You need to connect emotionally and work within systems. Focus on emotional intimacy.",
-            remedy: "♒ Practice emotional connection. Work within existing systems. Build intimate relationships."
-        },
-        'Pisces': {
-            prediction: "Your main challenge is escapism and boundary issues. You need to stay grounded and set healthy boundaries. Focus on reality and self-care.",
-            remedy: "🐟 Practice grounding techniques. Set clear boundaries. Stay connected to reality."
-        }
-    };
-
-    const prediction = challengePredictions[sunSign.name] || challengePredictions['Aries'];
-    $('challenge-prediction').innerHTML = prediction.prediction;
-    $('challenge-remedy').innerHTML = `<strong>💫 Remedy:</strong> ${prediction.remedy}`;
-}
-
-function generateLuckyElements(sunSign, moonSign) {
-    const luckyElements = {
-        'Aries': { color: 'Red', number: '1, 9', day: 'Tuesday', gemstone: 'Ruby' },
-        'Taurus': { color: 'Green', number: '2, 6', day: 'Friday', gemstone: 'Emerald' },
-        'Gemini': { color: 'Yellow', number: '3, 7', day: 'Wednesday', gemstone: 'Pearl' },
-        'Cancer': { color: 'White', number: '2, 7', day: 'Monday', gemstone: 'Moonstone' },
-        'Leo': { color: 'Gold', number: '1, 4', day: 'Sunday', gemstone: 'Ruby' },
-        'Virgo': { color: 'Green', number: '5, 7', day: 'Wednesday', gemstone: 'Sapphire' },
-        'Libra': { color: 'Pink', number: '6, 9', day: 'Friday', gemstone: 'Opal' },
-        'Scorpio': { color: 'Deep Red', number: '4, 8', day: 'Tuesday', gemstone: 'Topaz' },
-        'Sagittarius': { color: 'Purple', number: '3, 9', day: 'Thursday', gemstone: 'Turquoise' },
-        'Capricorn': { color: 'Dark Green', number: '4, 8', day: 'Saturday', gemstone: 'Garnet' },
-        'Aquarius': { color: 'Electric Blue', number: '4, 7', day: 'Saturday', gemstone: 'Amethyst' },
-        'Pisces': { color: 'Sea Green', number: '3, 7', day: 'Thursday', gemstone: 'Aquamarine' }
-    };
-
-    const elements = luckyElements[sunSign.name] || luckyElements['Aries'];
-    
-    $('lucky-elements').innerHTML = `
-        <div class="lucky-element">
-            <div class="lucky-element-label">Lucky Color</div>
-            <div class="lucky-element-value">${elements.color}</div>
-        </div>
-        <div class="lucky-element">
-            <div class="lucky-element-label">Lucky Numbers</div>
-            <div class="lucky-element-value">${elements.number}</div>
-        </div>
-        <div class="lucky-element">
-            <div class="lucky-element-label">Lucky Day</div>
-            <div class="lucky-element-value">${elements.day}</div>
-        </div>
-        <div class="lucky-element">
-            <div class="lucky-element-label">Lucky Gemstone</div>
-            <div class="lucky-element-value">${elements.gemstone}</div>
-        </div>
-    `;
-}
-
-function generateDailyHoroscope(sunSign) {
-    const dailyHoroscopes = {
-        'Aries': "Today is perfect for taking action on your goals. Your energy is high, so use it wisely. A new opportunity may present itself - be ready to seize it!",
-        'Taurus': "Focus on stability and comfort today. It's a good day for financial planning and enjoying simple pleasures. Trust your instincts in important decisions.",
-        'Gemini': "Communication is your strength today. Share your ideas and connect with others. A conversation may lead to exciting new possibilities.",
-        'Cancer': "Your intuition is strong today. Listen to your inner voice and trust your feelings. It's a good day for family connections and emotional healing.",
-        'Leo': "Your charisma is at its peak today. Others will be drawn to your positive energy. Use this influence to inspire and lead others.",
-        'Virgo': "Attention to detail will serve you well today. Focus on organization and efficiency. A small improvement can lead to significant results.",
-        'Libra': "Balance and harmony are your themes today. Seek compromise in conflicts and create beauty in your surroundings. Relationships flourish.",
-        'Scorpio': "Your depth and intensity are powerful today. Use your insight to understand complex situations. Trust your instincts in important matters.",
-        'Sagittarius': "Adventure and learning call to you today. Explore new ideas and expand your horizons. A journey, physical or mental, awaits.",
-        'Capricorn': "Your determination and discipline are your strengths today. Focus on long-term goals and make steady progress. Success comes through persistence.",
-        'Aquarius': "Innovation and originality are your gifts today. Think outside the box and share your unique perspective. Others will appreciate your fresh ideas.",
-        'Pisces': "Creativity and intuition flow freely today. Trust your artistic instincts and spiritual insights. Dreams may hold important messages."
-    };
-
-    const horoscope = dailyHoroscopes[sunSign.name] || dailyHoroscopes['Aries'];
-    $('daily-horoscope').innerHTML = `<strong>🌟 ${sunSign.name} Daily Horoscope:</strong><br>${horoscope}`;
-}
-
-// Initialize Love Life Line inputs
-function initializeLoveLifeInputs() {
-    const inputs = ['relationship-status', 'relationship-duration', 'total-relationships'];
-    
-    inputs.forEach(inputId => {
-        const element = $(inputId);
-        if (element) {
-            element.addEventListener('change', () => {
-                const dob = dobInputEl.value ? new Date(dobInputEl.value) : null;
-                if (dob) {
-                    const now = new Date();
-                    const age = calculateAgeParts(dob, now);
-                    calculateLoveLifeLine(age.years);
-                    updateLifeLoveComparison();
-                }
-            });
-        }
-    });
-}
-
-// Height & Weight Calculator Functions
-function initializeHeightWeightCalculator() {
-    const calculateBtn = document.getElementById('calculate-hw-btn');
     if (calculateBtn) {
-        calculateBtn.addEventListener('click', calculateHealthStatus);
-    }
-}
-
-function calculateHealthStatus() {
-    const gender = document.getElementById('gender-select').value;
-    const height = parseFloat(document.getElementById('height-input').value);
-    const weight = parseFloat(document.getElementById('weight-input').value);
-    const heightUnit = document.getElementById('height-unit').value;
-    const weightUnit = document.getElementById('weight-unit').value;
-
-    if (!gender || !height || !weight) {
-        alert('Please fill in all fields');
-        return;
+        calculateBtn.addEventListener('click', calculateAndShow);
     }
 
-    // Convert units to standard (cm and kg)
-    const heightCm = heightUnit === 'ft' ? height * 30.48 : height;
-    const weightKg = weightUnit === 'lbs' ? weight * 0.453592 : weight;
-
-    // Calculate BMI
-    const heightM = heightCm / 100;
-    const bmi = weightKg / (heightM * heightM);
-
-    // Calculate percentiles based on age and gender
-    const age = calculateAgeFromDOB();
-    const heightPercentile = calculateHeightPercentile(heightCm, age, gender);
-    const weightPercentile = calculateWeightPercentile(weightKg, heightCm, age, gender);
-
-    // Display results
-    displayHealthResults(bmi, heightPercentile, weightPercentile, heightCm, weightKg);
-}
-
-function calculateAgeFromDOB() {
-    const dobInput = document.getElementById('dob');
-    if (!dobInput.value) return 25; // Default age if DOB not set
-    
-    const dob = new Date(dobInput.value);
-    const today = new Date();
-    const age = today.getFullYear() - dob.getFullYear();
-    const monthDiff = today.getMonth() - dob.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
-        return age - 1;
+    if (dobPickerBtnEl && dobInputEl) {
+        dobPickerBtnEl.addEventListener('click', () => {
+            try {
+                if (typeof dobInputEl.showPicker === 'function') dobInputEl.showPicker();
+                else dobInputEl.focus();
+            } catch (_) {
+                dobInputEl.focus();
+            }
+        });
     }
-    return age;
-}
 
-function calculateHeightPercentile(heightCm, age, gender) {
-    // Simplified height percentile calculation based on WHO standards
-    let expectedHeight;
-    
-    if (gender === 'male') {
-        if (age <= 18) {
-            expectedHeight = 170 + (age - 18) * 0.5; // Adult male average
+    if (dobInputEl) {
+        dobInputEl.addEventListener('input', syncDobPlaceholder);
+        dobInputEl.addEventListener('focus', syncDobPlaceholder);
+        dobInputEl.addEventListener('blur', syncDobPlaceholder);
+    }
+
+    $('generate-predictions-btn')?.addEventListener('click', () => {
+        if (currentDob) updateAstrology(currentDob);
+    });
+
+    $('calculate-hw-btn')?.addEventListener('click', calculateHealthStatus);
+
+    ['relationship-status', 'relationship-duration', 'total-relationships'].forEach(id => {
+        $(id)?.addEventListener('change', () => {
+            if (currentDob) updateLoveLifeLine(calculateAgeParts(currentDob, new Date()).years);
+        });
+    });
+
+    // Share & Copy Event Listeners
+    $('share-btn')?.addEventListener('click', () => {
+        const text = `I am ${$('years').textContent} years, ${$('months').textContent} months old! 🚀 Check your cosmic age & astrology on Precision Age Calculator.`;
+        if (navigator.share) {
+            navigator.share({ title: 'My Precision Age', text });
         } else {
-            expectedHeight = 175; // Adult male average
+            copyTextToClipboard(text);
         }
-    } else {
-        if (age <= 18) {
-            expectedHeight = 160 + (age - 18) * 0.5; // Adult female average
-        } else {
-            expectedHeight = 162; // Adult female average
-        }
-    }
-    
-    const difference = heightCm - expectedHeight;
-    const standardDeviation = 7; // Approximate standard deviation
-    const zScore = difference / standardDeviation;
-    
-    // Convert Z-score to percentile
-    return Math.round((0.5 + 0.5 * Math.erf(zScore / Math.sqrt(2))) * 100);
-}
+    });
 
-function calculateWeightPercentile(weightKg, heightCm, age, gender) {
-    // Calculate ideal weight using various formulas
-    const heightM = heightCm / 100;
-    
-    // Devine formula for ideal weight
-    let idealWeight;
-    if (gender === 'male') {
-        idealWeight = 50 + 2.3 * ((heightCm - 152.4) / 2.54);
-    } else {
-        idealWeight = 45.5 + 2.3 * ((heightCm - 152.4) / 2.54);
-    }
-    
-    const difference = weightKg - idealWeight;
-    const standardDeviation = 8; // Approximate standard deviation
-    const zScore = difference / standardDeviation;
-    
-    // Convert Z-score to percentile
-    return Math.round((0.5 + 0.5 * Math.erf(zScore / Math.sqrt(2))) * 100);
-}
+    $('copy-btn')?.addEventListener('click', () => {
+        const text = `My Age: ${$('years').textContent} Years, ${$('months').textContent} Months, ${$('days').textContent} Days.\nTotal Lived: ${$('hoursTotal').textContent} Hours, ${$('minutesTotal').textContent} Minutes.\nNext Birthday: ${$('next-birthday-date').textContent}.`;
+        copyTextToClipboard(text, 'Full Summary copied!');
+    });
 
-// Math.erf approximation
-Math.erf = function(x) {
-    const a1 =  0.254829592;
-    const a2 = -0.284496736;
-    const a3 =  1.421413741;
-    const a4 = -1.453152027;
-    const a5 =  1.061405429;
-    const p  =  0.3275911;
-    
-    const sign = x >= 0 ? 1 : -1;
-    x = Math.abs(x);
-    
-    const t = 1.0 / (1.0 + p * x);
-    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-    
-    return sign * y;
-};
+    $('copy-instagram-btn')?.addEventListener('click', () => {
+        const text = `Exactly ${$('years').textContent} years, ${$('months').textContent} months, ${$('days').textContent} days old today! ✨ #AgeCalculator #PrecisionAge`;
+        copyTextToClipboard(text, 'Instagram Caption copied!');
+    });
 
-function displayHealthResults(bmi, heightPercentile, weightPercentile, heightCm, weightKg) {
-    const resultsDiv = document.getElementById('hw-results');
-    const bmiValue = document.getElementById('bmi-value');
-    const bmiStatus = document.getElementById('bmi-status');
-    const heightPercentileEl = document.getElementById('height-percentile');
-    const heightStatus = document.getElementById('height-status');
-    const weightPercentileEl = document.getElementById('weight-percentile');
-    const weightStatus = document.getElementById('weight-status');
-    const recommendations = document.getElementById('hw-recommendations');
+    $('copy-twitter-btn')?.addEventListener('click', () => {
+        const text = `Age: ${$('years').textContent} yrs | ${$('poster-days-lived')?.textContent} | Next Birthday in ${$('countdown-days').textContent} days 🚀`;
+        copyTextToClipboard(text, 'Tweet copied!');
+    });
 
-    // Display BMI
-    bmiValue.textContent = bmi.toFixed(1);
-    if (bmi < 18.5) {
-        bmiStatus.textContent = 'Underweight';
-        bmiStatus.className = 'hw-result-status attention';
-    } else if (bmi < 25) {
-        bmiStatus.textContent = 'Normal';
-        bmiStatus.className = 'hw-result-status healthy';
-    } else if (bmi < 30) {
-        bmiStatus.textContent = 'Overweight';
-        bmiStatus.className = 'hw-result-status warning';
-    } else {
-        bmiStatus.textContent = 'Obese';
-        bmiStatus.className = 'hw-result-status attention';
-    }
-
-    // Display Height Percentile
-    heightPercentileEl.textContent = heightPercentile + '%';
-    if (heightPercentile < 25) {
-        heightStatus.textContent = 'Below Average';
-        heightStatus.className = 'hw-result-status attention';
-    } else if (heightPercentile < 75) {
-        heightStatus.textContent = 'Average';
-        heightStatus.className = 'hw-result-status healthy';
-    } else {
-        heightStatus.textContent = 'Above Average';
-        heightStatus.className = 'hw-result-status healthy';
-    }
-
-    // Display Weight Percentile
-    weightPercentileEl.textContent = weightPercentile + '%';
-    if (weightPercentile < 25) {
-        weightStatus.textContent = 'Below Average';
-        weightStatus.className = 'hw-result-status attention';
-    } else if (weightPercentile < 75) {
-        weightStatus.textContent = 'Average';
-        weightStatus.className = 'hw-result-status healthy';
-    } else {
-        weightStatus.textContent = 'Above Average';
-        weightStatus.className = 'hw-result-status warning';
-    }
-
-    // Generate recommendations
-    generateHealthRecommendations(bmi, heightPercentile, weightPercentile, recommendations);
-
-    // Show results
-    resultsDiv.classList.remove('hidden');
-    resultsDiv.scrollIntoView({ behavior: 'smooth' });
-}
-
-function generateHealthRecommendations(bmi, heightPercentile, weightPercentile, recommendationsEl) {
-    let recommendations = [];
-    
-    // BMI-based recommendations
-    if (bmi < 18.5) {
-        recommendations.push('Consider increasing your caloric intake with healthy foods');
-        recommendations.push('Include protein-rich foods in your diet');
-        recommendations.push('Consult a nutritionist for personalized advice');
-    } else if (bmi >= 25) {
-        recommendations.push('Focus on balanced nutrition and portion control');
-        recommendations.push('Increase physical activity to 150+ minutes per week');
-        recommendations.push('Consider consulting a healthcare provider');
-    } else {
-        recommendations.push('Maintain your current healthy lifestyle');
-        recommendations.push('Continue regular exercise and balanced diet');
-    }
-
-    // Height-based recommendations
-    if (heightPercentile < 25) {
-        recommendations.push('Ensure adequate nutrition for optimal growth');
-        recommendations.push('Get sufficient sleep (7-9 hours)');
-        recommendations.push('Include calcium-rich foods in your diet');
-    }
-
-    // Weight-based recommendations
-    if (weightPercentile < 25) {
-        recommendations.push('Focus on nutrient-dense foods');
-        recommendations.push('Consider strength training exercises');
-    } else if (weightPercentile >= 75) {
-        recommendations.push('Monitor portion sizes');
-        recommendations.push('Increase cardiovascular exercise');
-    }
-
-    // Display recommendations
-    recommendationsEl.innerHTML = `
-        <h5>💡 Health Recommendations</h5>
-        <ul>
-            ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
-        </ul>
-    `;
-}
+    $('copy-whatsapp-btn')?.addEventListener('click', () => {
+        const text = `🎂 My Age Journey: ${$('years').textContent} Years, ${$('months').textContent} Months, ${$('days').textContent} Days! #PrecisionAge`;
+        copyTextToClipboard(text, 'WhatsApp Status text copied!');
+    });
+});
