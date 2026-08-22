@@ -6,7 +6,6 @@ const dobInputEl = $('dob');
 const errorMessageEl = $('error-message');
 const resultContainerEl = $('result-container');
 const themeToggleBtn = $('theme-toggle');
-const dobPlaceholderEl = $('dob-placeholder');
 const dobPickerBtnEl = $('dob-picker-btn');
 const calculateBtn = $('calculate-btn');
 
@@ -17,12 +16,6 @@ let currentDob = null;
 // Set max date to today
 if (dobInputEl) {
     dobInputEl.max = new Date().toISOString().split('T')[0];
-}
-
-function syncDobPlaceholder() {
-    if (!dobInputEl || !dobPlaceholderEl) return;
-    const shouldShow = !dobInputEl.value && document.activeElement !== dobInputEl;
-    dobPlaceholderEl.style.display = shouldShow ? 'block' : 'none';
 }
 
 // --- Theme Controller ---
@@ -635,11 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (dobInputEl) {
-        dobInputEl.addEventListener('input', syncDobPlaceholder);
-        dobInputEl.addEventListener('focus', syncDobPlaceholder);
-        dobInputEl.addEventListener('blur', syncDobPlaceholder);
-    }
 
     $('generate-predictions-btn')?.addEventListener('click', () => {
         if (currentDob) updateAstrology(currentDob);
